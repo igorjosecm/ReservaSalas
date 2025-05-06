@@ -1,3 +1,4 @@
+import classes.DatabaseConnection;
 import classes.Reserva;
 import classes.Sala;
 
@@ -5,10 +6,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/*
 public class Main {
     static List<Sala> salas = new ArrayList<>();
     static List<Reserva> reservas = new ArrayList<>();
@@ -199,4 +205,33 @@ public class Main {
         scanner.close();
     }
 
+}
+*/
+
+public class Main {
+    public static void main(String[] args) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            System.out.println("Conexão estabelecida com sucesso!");
+
+            // Exemplo de consulta
+            String sql = "SELECT * FROM reserva_salas.sala WHERE capacidade > ?";
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, 30);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        System.out.printf("Sala: %s, Capacidade: %d%n",
+                                rs.getString("nome_sala"),
+                                rs.getInt("capacidade"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro na conexão com o banco de dados:");
+            e.printStackTrace();
+        } finally {
+            DatabaseConnection.close();
+        }
+    }
 }
