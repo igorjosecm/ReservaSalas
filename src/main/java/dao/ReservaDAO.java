@@ -2,6 +2,7 @@ package dao;
 
 import classes.CompositeKey;
 import classes.Reserva;
+import com.zaxxer.hikari.HikariConfig;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

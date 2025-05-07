@@ -1,5 +1,6 @@
 package controllers;
 
+import classes.CompositeKey;
 import classes.MateriaProfessor;
 import dao.MateriaProfessorDAO;
 
@@ -8,22 +9,33 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Scanner;
 
 public class MateriaProfessorController {
     private final MateriaProfessorDAO materiaProfessorDAO;
 
+    private final ProfessorController professorController;
+
+    private final MateriaController materiaController;
+
     public MateriaProfessorController(Connection connection) {
         this.materiaProfessorDAO = new MateriaProfessorDAO(connection);
+        this.professorController = new ProfessorController(connection);
+        this.materiaController  = new MateriaController(connection);
     }
 
-    public void createMateriaProfessor(int matriculaProfessor) throws SQLException {
+    public void createMateriaProfessor() throws SQLException {
         Scanner input = new Scanner(System.in);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         System.out.println("\n- Relacionar matéria a professor: ");
-        System.out.print("Código da materia: ");
+        materiaController.findAllMaterias();
+        System.out.println("Código da materia: ");
         String codMateria = input.nextLine();
+        professorController.findAllProfessores();
+        System.out.println("Matrícula do professor: ");
+        Integer matriculaProfessor = input.nextInt();
 
         LocalDate inicioPeriodo;
         LocalDate fimPeriodo;
@@ -53,57 +65,66 @@ public class MateriaProfessorController {
         materiaProfessor.setFimPeriodo(fimPeriodo);
 
         materiaProfessorDAO.create(materiaProfessor);
-        System.out.println("\nMatéria adicionada com sucesso!");
+        System.out.println("\nRelação adicionada com sucesso!");
     }
 
-    /*
-    public void deleteMateria() throws SQLException {
+    public void deleteMateriaProfessor() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Remoção de materia");
-        System.out.print("Código da materia: ");
-        String codMateria = input.next();
+        System.out.println("\n- Remoção de relação de materia com professor");
+        materiaController.findAllMaterias();
+        System.out.println("Código da materia: ");
+        String codMateria = input.nextLine();
+        professorController.findAllProfessores();
+        System.out.println("Matrícula do professor: ");
+        Integer matriculaProfessor = input.nextInt();
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_materia", codMateria);
+        key.addKey("matricula_professor",matriculaProfessor);
 
         materiaProfessorDAO.delete(key);
-        System.out.println("\nMateria removida com sucesso!");
+        System.out.println("\nRelação removida com sucesso!");
     }
 
-    public void findMateriaById() throws SQLException {
+    public void findMateriaProfessorById() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Busca de materia por ID");
-        System.out.print("Código da materia: ");
-        String codMateria = input.next();
+        System.out.println("\n- Busca de relação por ID");
+        materiaController.findAllMaterias();
+        System.out.println("Código da materia: ");
+        String codMateria = input.nextLine();
+        professorController.findAllProfessores();
+        System.out.println("Matrícula do professor: ");
+        Integer matriculaProfessor = input.nextInt();
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_materia", codMateria);
+        key.addKey("matricula_professor",matriculaProfessor);
 
-        Materia materia = materiaDAO.findById(key);
-        if (materia != null) {
-            System.out.println("\nMateria encontrada:");
-            System.out.println("Nome: " + materia.getNomeMateria());
-            System.out.println("Carga horária: " + materia.getCargaHoraria());
+        MateriaProfessor materiaProfessor = materiaProfessorDAO.findById(key);
+        if (materiaProfessor != null) {
+            System.out.println("\nRelação encontrada:");
+            System.out.println("Início período: " + materiaProfessor.getInicioPeriodo());
+            System.out.println("Fim período: " + materiaProfessor.getFimPeriodo());
         } else {
-            System.out.println("\nMateria não encontrada.");
+            System.out.println("\nRelação não encontrada.");
         }
     }
 
-    public void findAllMaterias() throws SQLException {
-        System.out.println("\nListando todas as materias:");
-        List<Materia> materias = materiaDAO.findAll();
+    public void findAllMateriasProfessores() throws SQLException {
+        System.out.println("\nListando todas as materias relacionadas aos professores:");
+        List<MateriaProfessor> materiasProfessores = materiaProfessorDAO.findAll();
 
-        if (materias.isEmpty()) {
-            System.out.println("\nNenhuma materia encontrada.");
+        if (materiasProfessores.isEmpty()) {
+            System.out.println("\nNenhuma relação encontrada.");
             return;
         }
 
-        for (Materia materia : materias) {
+        for (MateriaProfessor materiaProfessor : materiasProfessores) {
             System.out.println("------------------------------");
-            System.out.println("Código da materia: " + materia.getCodigoMateria());
-            System.out.println("Nome: " + materia.getNomeMateria());
-            System.out.println("Carga horária: " + materia.getCargaHoraria());
+            System.out.println("Código da materia: " + materiaProfessor.getCodigoMateria());
+            System.out.println("Matrícula do professor: " + materiaProfessor.getMatriculaProfessor());
+            System.out.println("Início período: " + materiaProfessor.getInicioPeriodo());
+            System.out.println("Fim período: " + materiaProfessor.getFimPeriodo());
         }
     }
-    */
 }
