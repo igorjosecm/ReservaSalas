@@ -3,6 +3,8 @@ package controllers;
 import dao.SalaDAO;
 import classes.Sala;
 import classes.CompositeKey;
+import helpers.Helpers;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -25,9 +27,9 @@ public class SalaController {
         System.out.print("Nome da sala: ");
         String nomeSala = input.nextLine();
         System.out.print("Andar: ");
-        int andar = Integer.parseInt(input.nextLine());
+        int andar = Helpers.getIntInput(input);
         System.out.print("Capacidade: ");
-        int capacidade = Integer.parseInt(input.nextLine());;
+        int capacidade = Helpers.getIntInput(input);
 
         Sala sala = new Sala();
         sala.setCodigoSala(codSala);
@@ -54,9 +56,9 @@ public class SalaController {
             System.out.print("Novo nome da sala: ");
             String nomeSala = input.nextLine();
             System.out.print("Novo andar: ");
-            int andar = Integer.parseInt(input.nextLine());
+            int andar = Helpers.getIntInput(input);
             System.out.print("Nova capacidade: ");
-            int capacidade = Integer.parseInt(input.nextLine());
+            int capacidade = Helpers.getIntInput(input);
 
             sala.setNomeSala(nomeSala);
             sala.setAndar(andar);
@@ -73,10 +75,10 @@ public class SalaController {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Exclusão de sala");
         System.out.print("Código da sala: ");
-        String codSala = input.nextLine();
+        String codigoSala = input.nextLine();
 
         CompositeKey key = new CompositeKey();
-        key.addKey("codigo_sala", codSala);
+        key.addKey("codigo_sala", codigoSala);
 
         salaDAO.delete(key);
         System.out.println("\nSala excluída com sucesso!");
@@ -86,10 +88,10 @@ public class SalaController {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Busca de sala");
         System.out.print("Código da sala: ");
-        String codSala = input.nextLine();
+        String codigoSala = input.nextLine();
 
         CompositeKey key = new CompositeKey();
-        key.addKey("codigo_sala", codSala);
+        key.addKey("codigo_sala", codigoSala);
 
         Sala sala = salaDAO.findById(key);
         if (sala != null) {
@@ -113,11 +115,34 @@ public class SalaController {
 
         for (Sala sala : salas) {
             System.out.println("------------------------------");
-            System.out.println("Código da Sala: " + sala.getCodigoSala());
-            System.out.println("Código do Bloco: " + sala.getCodigoBloco());
-            System.out.println("Nome: " + sala.getNomeSala());
-            System.out.println("Andar: " + sala.getAndar());
-            System.out.println("Capacidade: " + sala.getCapacidade());
+            printInfoSala(sala);
         }
+    }
+
+    public void findSalasByBloco() throws SQLException {
+        Scanner input = new Scanner(System.in);
+        System.out.println("\n- Buscar salas por bloco");
+        System.out.print("Código do bloco: ");
+        String codigoBloco = input.nextLine();
+
+        List<Sala> salas = salaDAO.findSalasByBloco(codigoBloco);
+
+        if (salas.isEmpty()) {
+            System.out.println("\nNenhuma sala encontrada.");
+            return;
+        }
+
+        for (Sala sala : salas) {
+            System.out.println("------------------------------");
+            printInfoSala(sala);
+        }
+    }
+
+    private void printInfoSala(Sala sala) {
+        System.out.println("Código da Sala: " + sala.getCodigoSala());
+        System.out.println("Código do Bloco: " + sala.getCodigoBloco());
+        System.out.println("Nome: " + sala.getNomeSala());
+        System.out.println("Andar: " + sala.getAndar());
+        System.out.println("Capacidade: " + sala.getCapacidade());
     }
 }

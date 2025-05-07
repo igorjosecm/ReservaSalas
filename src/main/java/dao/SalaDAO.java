@@ -4,6 +4,7 @@ import classes.CompositeKey;
 import classes.Sala;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -82,4 +83,22 @@ public class SalaDAO extends GenericDAO<Sala> {
 
     @Override
     protected void setGeneratedId(Sala entity, ResultSet generatedKeys) throws SQLException {}
+
+    public List<Sala> findSalasByBloco(String codigoBloco) throws SQLException  {
+        String tableName = getAlias() + "." + getTableName();
+        List<Sala> salas = new ArrayList<>();
+
+        String sql = "SELECT * FROM " + tableName + " WHERE codigo_bloco = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, codigoBloco);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    salas.add(fromResultSet(rs));
+                }
+            }
+        }
+        return salas;
+    }
 }
