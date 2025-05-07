@@ -72,9 +72,9 @@ public class ProfessorDAO extends GenericDAO<Professor> {
 
     @Override
     protected CompositeKey getIdValues(Professor entity) {
-        CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("matricula_professor", entity.getMatriculaProfessor());
-        return compositeKey;
+        CompositeKey key = new CompositeKey();
+        key.addKey("matricula_professor", entity.getMatriculaProfessor());
+        return key;
     }
 
     @Override

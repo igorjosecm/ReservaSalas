@@ -7,7 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static HikariDataSource dataSource;
+    private static final HikariDataSource dataSource;
 
     static {
         try {
@@ -26,12 +26,12 @@ public class DatabaseConnection {
             dataSource = new HikariDataSource(config);
 
             try (Connection testConn = dataSource.getConnection()) {
-                System.out.println("Successfully connected to Aiven PostgreSQL!");
+                System.out.println("Sucesso na conexão com o servidor!\n");
             }
         } catch (SQLException e) {
-            System.err.println("Failed to initialize connection pool:");
+            System.err.println("Erro ao tentar estabelecer uma conexão com o servidor:");
             e.printStackTrace();
-            throw new RuntimeException("Database connection failed", e);
+            throw new RuntimeException("A conexão falhou", e);
         }
     }
 

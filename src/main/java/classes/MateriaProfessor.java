@@ -1,18 +1,18 @@
 package classes;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class MateriaProfessor {
     private Integer matriculaProfessor;
-    private Integer codigoMateria;
-    private Date inicioPeriodo;
-    private Date fimPeriodo;
+    private String codigoMateria;
+    private LocalDate inicioPeriodo;
+    private LocalDate fimPeriodo;
 
     public MateriaProfessor() {
         this.setMatriculaProfessor(0);
-        this.setCodigoMateria(0);
-        this.setInicioPeriodo(new Date());
-        this.setFimPeriodo(new Date());
+        this.setCodigoMateria("");
+        this.setInicioPeriodo(LocalDate.now());
+        this.setFimPeriodo(LocalDate.now());
     }
 
     public Integer getMatriculaProfessor() {
@@ -23,27 +23,27 @@ public class MateriaProfessor {
         this.matriculaProfessor = matriculaProfessor;
     }
 
-    public Integer getCodigoMateria() {
+    public String getCodigoMateria() {
         return codigoMateria;
     }
 
-    public void setCodigoMateria(Integer codigoMateria) {
+    public void setCodigoMateria(String codigoMateria) {
         this.codigoMateria = codigoMateria;
     }
 
-    public Date getInicioPeriodo() {
+    public LocalDate getInicioPeriodo() {
         return inicioPeriodo;
     }
 
-    public void setInicioPeriodo(Date inicioPeriodo) {
+    public void setInicioPeriodo(LocalDate inicioPeriodo) {
         this.inicioPeriodo = inicioPeriodo;
     }
 
-    public Date getFimPeriodo() {
+    public LocalDate getFimPeriodo() {
         return fimPeriodo;
     }
 
-    public void setFimPeriodo(Date fimPeriodo) {
+    public void setFimPeriodo(LocalDate fimPeriodo) {
         this.fimPeriodo = fimPeriodo;
     }
 }

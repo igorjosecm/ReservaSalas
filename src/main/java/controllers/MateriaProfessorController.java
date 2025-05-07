@@ -1,12 +1,13 @@
 package controllers;
 
-import classes.CompositeKey;
-import classes.Materia;
+import classes.MateriaProfessor;
 import dao.MateriaProfessorDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class MateriaProfessorController {
@@ -16,44 +17,46 @@ public class MateriaProfessorController {
         this.materiaProfessorDAO = new MateriaProfessorDAO(connection);
     }
 
-    public void createMateria() throws SQLException {
+    public void createMateriaProfessor(int matriculaProfessor) throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Cadastro de Materia");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        System.out.println("\n- Relacionar matéria a professor: ");
         System.out.print("Código da materia: ");
         String codMateria = input.nextLine();
-        System.out.print("Nome da materia: ");
-        String nomeMateria = input.nextLine();
-        System.out.print("Carga horária: ");
-        int cargaHoraria = Integer.parseInt(input.nextLine());
 
-        Materia materia = new Materia();
-        materia.setCodigoMateria(codMateria);
-        materia.setNomeMateria(nomeMateria);
-        materia.setCargaHoraria(cargaHoraria);
+        LocalDate inicioPeriodo;
+        LocalDate fimPeriodo;
 
-        materiaDAO.create(materia);
-        System.out.println("\nMateria criada com sucesso!");
+        while (true) {
+            try {
+                System.out.print("Início do período (dd/mm/aaaa): ");
+                inicioPeriodo = LocalDate.parse(input.nextLine(), formatter);
+
+                System.out.print("Fim do período (dd/mm/aaaa): ");
+                fimPeriodo = LocalDate.parse(input.nextLine(), formatter);
+
+                if (inicioPeriodo.isAfter(fimPeriodo)) {
+                    System.out.println("A data inicial não pode ser após a data final. Tente novamente.");
+                } else {
+                    break;
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato de data inválido. Use dd/mm/aaaa.");
+            }
+        }
+
+        MateriaProfessor materiaProfessor = new MateriaProfessor();
+        materiaProfessor.setCodigoMateria(codMateria);
+        materiaProfessor.setMatriculaProfessor(matriculaProfessor);
+        materiaProfessor.setInicioPeriodo(inicioPeriodo);
+        materiaProfessor.setFimPeriodo(fimPeriodo);
+
+        materiaProfessorDAO.create(materiaProfessor);
+        System.out.println("\nMatéria adicionada com sucesso!");
     }
 
-    public void updateMateria() throws SQLException {
-        Scanner input = new Scanner(System.in);
-        System.out.println("\n- Atualização de materia");
-        System.out.print("Código da materia: ");
-        String codMateria = input.nextLine();
-        System.out.print("Novo nome da materia: ");
-        String nomeMateria = input.nextLine();
-        System.out.print("Novo carga horaria: ");
-        int cargaHoraria = Integer.parseInt(input.nextLine());
-
-        Materia materia = new Materia();
-        materia.setCodigoMateria(codMateria);
-        materia.setNomeMateria(nomeMateria);
-        materia.setCargaHoraria(cargaHoraria);
-
-        materiaDAO.update(materia);
-        System.out.println("\nMateria atualizada com sucesso!");
-    }
-
+    /*
     public void deleteMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Remoção de materia");
@@ -63,7 +66,7 @@ public class MateriaProfessorController {
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_materia", codMateria);
 
-        materiaDAO.delete(key);
+        materiaProfessorDAO.delete(key);
         System.out.println("\nMateria removida com sucesso!");
     }
 
@@ -96,10 +99,11 @@ public class MateriaProfessorController {
         }
 
         for (Materia materia : materias) {
-            System.out.println("\n----------------------------------");
+            System.out.println("------------------------------");
             System.out.println("Código da materia: " + materia.getCodigoMateria());
             System.out.println("Nome: " + materia.getNomeMateria());
             System.out.println("Carga horária: " + materia.getCargaHoraria());
         }
     }
+    */
 }

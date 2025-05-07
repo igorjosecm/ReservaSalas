@@ -17,10 +17,10 @@ public class MateriaProfessorDAO extends GenericDAO<MateriaProfessor> {
     @Override
     protected MateriaProfessor fromResultSet(ResultSet rs) throws SQLException {
         MateriaProfessor materiaProfessor = new MateriaProfessor();
-        materiaProfessor.setCodigoMateria(rs.getInt("codigo_materia"));
+        materiaProfessor.setCodigoMateria(rs.getString("codigo_materia"));
         materiaProfessor.setMatriculaProfessor(rs.getInt("matricula_professor"));
-        materiaProfessor.setInicioPeriodo(rs.getDate("inicio_periodo"));
-        materiaProfessor.setFimPeriodo(rs.getDate("fim_periodo"));
+        materiaProfessor.setInicioPeriodo(rs.getDate("inicio_periodo").toLocalDate());
+        materiaProfessor.setFimPeriodo(rs.getDate("fim_periodo").toLocalDate());
         return materiaProfessor;
     }
 

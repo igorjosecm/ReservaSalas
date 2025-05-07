@@ -68,9 +68,9 @@ public class BlocoDAO extends GenericDAO<Bloco> {
 
     @Override
     protected CompositeKey getIdValues(Bloco entity) {
-        CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("codigo_bloco", entity.getCodigoBloco());
-        return compositeKey;
+        CompositeKey key = new CompositeKey();
+        key.addKey("codigo_bloco", entity.getCodigoBloco());
+        return key;
     }
 
     @Override

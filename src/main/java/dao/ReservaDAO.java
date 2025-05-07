@@ -61,9 +61,6 @@ public class ReservaDAO extends GenericDAO<Reserva> {
     protected List<String> getIdColumns() {
         List<String> idColumns = new ArrayList<>();
         idColumns.add("id_reserva");
-        idColumns.add("codigo_sala");
-        idColumns.add("matricula_professor");
-        idColumns.add("codigo_materia");
         return idColumns;
     }
 
@@ -88,12 +85,9 @@ public class ReservaDAO extends GenericDAO<Reserva> {
 
     @Override
     protected CompositeKey getIdValues(Reserva entity) {
-        CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("id_reserva", entity.getIdReserva());
-        compositeKey.addKey("codigo_sala", entity.getCodigoSala());
-        compositeKey.addKey("matricula_professor", entity.getMatriculaProfessor());
-        compositeKey.addKey("codigo_materia", entity.getCodigoMateria());
-        return compositeKey;
+        CompositeKey key = new CompositeKey();
+        key.addKey("id_reserva", entity.getIdReserva());
+        return key;
     }
 
     @Override

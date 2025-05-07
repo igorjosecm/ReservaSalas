@@ -68,9 +68,9 @@ public class MateriaDAO extends GenericDAO<Materia> {
 
     @Override
     protected CompositeKey getIdValues(Materia entity) {
-        CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("codigo_materia", entity.getCodigoMateria());
-        return compositeKey;
+        CompositeKey key = new CompositeKey();
+        key.addKey("codigo_materia", entity.getCodigoMateria());
+        return key;
     }
 
     @Override

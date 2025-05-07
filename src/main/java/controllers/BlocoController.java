@@ -56,22 +56,22 @@ public class BlocoController {
 
     public void deleteBloco() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Remoção de bloco");
+        System.out.println("\n- Exclusão de bloco");
         System.out.print("Código do bloco: ");
-        String codBloco = input.next();
+        String codBloco = input.nextLine();
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_bloco", codBloco);
 
         blocoDAO.delete(key);
-        System.out.println("\nBloco removido com sucesso!");
+        System.out.println("\nBloco excluído com sucesso!");
     }
 
     public void findBlocoById() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Busca de bloco por ID");
+        System.out.println("\n- Busca de bloco");
         System.out.print("Código do bloco: ");
-        String codBloco = input.next();
+        String codBloco = input.nextLine();
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_bloco", codBloco);
@@ -96,7 +96,7 @@ public class BlocoController {
         }
 
         for (Bloco bloco : blocos) {
-            System.out.println("\n----------------------------------");
+            System.out.println("------------------------------");
             System.out.println("Código do Bloco: " + bloco.getCodigoBloco());
             System.out.println("Nome: " + bloco.getNomeBloco());
             System.out.println("Número de andares: " + bloco.getNumAndares());

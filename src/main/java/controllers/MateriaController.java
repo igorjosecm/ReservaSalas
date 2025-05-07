@@ -18,10 +18,10 @@ public class MateriaController {
 
     public void createMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Cadastro de Materia");
-        System.out.print("Código da materia: ");
+        System.out.println("\n- Cadastro de matéria");
+        System.out.print("Código da matéria: ");
         String codMateria = input.nextLine();
-        System.out.print("Nome da materia: ");
+        System.out.print("Nome da matéria: ");
         String nomeMateria = input.nextLine();
         System.out.print("Carga horária: ");
         int cargaHoraria = Integer.parseInt(input.nextLine());
@@ -37,12 +37,12 @@ public class MateriaController {
 
     public void updateMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Atualização de materia");
-        System.out.print("Código da materia: ");
+        System.out.println("\n- Atualização de matéria");
+        System.out.print("Código da matéria: ");
         String codMateria = input.nextLine();
-        System.out.print("Novo nome da materia: ");
+        System.out.print("Novo nome da matéria: ");
         String nomeMateria = input.nextLine();
-        System.out.print("Novo carga horaria: ");
+        System.out.print("Novo carga horária: ");
         int cargaHoraria = Integer.parseInt(input.nextLine());
 
         Materia materia = new Materia();
@@ -51,27 +51,27 @@ public class MateriaController {
         materia.setCargaHoraria(cargaHoraria);
 
         materiaDAO.update(materia);
-        System.out.println("\nMateria atualizada com sucesso!");
+        System.out.println("\nMatéria atualizada com sucesso!");
     }
 
     public void deleteMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Remoção de materia");
+        System.out.println("\n- Exclusão de matéria");
         System.out.print("Código da materia: ");
-        String codMateria = input.next();
+        String codMateria = input.nextLine();
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_materia", codMateria);
 
         materiaDAO.delete(key);
-        System.out.println("\nMateria removida com sucesso!");
+        System.out.println("\nMatéria excluída com sucesso!");
     }
 
     public void findMateriaById() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Busca de materia por ID");
-        System.out.print("Código da materia: ");
-        String codMateria = input.next();
+        System.out.println("\n- Busca de matéria");
+        System.out.print("Código da matéria: ");
+        String codMateria = input.nextLine();
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_materia", codMateria);
@@ -82,22 +82,22 @@ public class MateriaController {
             System.out.println("Nome: " + materia.getNomeMateria());
             System.out.println("Carga horária: " + materia.getCargaHoraria());
         } else {
-            System.out.println("\nMateria não encontrada.");
+            System.out.println("\nMatéria não encontrada.");
         }
     }
 
     public void findAllMaterias() throws SQLException {
-        System.out.println("\nListando todas as materias:");
+        System.out.println("\nListando todas as matérias:");
         List<Materia> materias = materiaDAO.findAll();
 
         if (materias.isEmpty()) {
-            System.out.println("\nNenhuma materia encontrada.");
+            System.out.println("\nNenhuma matéria encontrada.");
             return;
         }
 
         for (Materia materia : materias) {
-            System.out.println("\n----------------------------------");
-            System.out.println("Código da materia: " + materia.getCodigoMateria());
+            System.out.println("------------------------------");
+            System.out.println("Código da matéria: " + materia.getCodigoMateria());
             System.out.println("Nome: " + materia.getNomeMateria());
             System.out.println("Carga horária: " + materia.getCargaHoraria());
         }

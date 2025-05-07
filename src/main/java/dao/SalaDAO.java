@@ -54,7 +54,6 @@ public class SalaDAO extends GenericDAO<Sala> {
     protected List<String> getIdColumns() {
         List<String> idColumns = new ArrayList<>();
         idColumns.add("codigo_sala");
-        idColumns.add("codigo_bloco");
         return idColumns;
     }
 
@@ -76,10 +75,9 @@ public class SalaDAO extends GenericDAO<Sala> {
 
     @Override
     protected CompositeKey getIdValues(Sala entity) {
-        CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("codigo_sala", entity.getCodigoSala());
-        compositeKey.addKey("codigo_bloco", entity.getCodigoBloco());
-        return compositeKey;
+        CompositeKey key = new CompositeKey();
+        key.addKey("codigo_sala", entity.getCodigoSala());
+        return key;
     }
 
     @Override

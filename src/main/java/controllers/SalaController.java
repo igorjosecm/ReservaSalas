@@ -45,53 +45,51 @@ public class SalaController {
         System.out.println("\n- Atualização de sala");
         System.out.print("Código da sala: ");
         String codSala = input.nextLine();
-        System.out.print("Código do bloco: ");
-        String codBloco = input.nextLine();
-        System.out.print("Novo nome da sala: ");
-        String nomeSala = input.nextLine();
-        System.out.print("Novo andar: ");
-        int andar = Integer.parseInt(input.nextLine());
-        System.out.print("Nova capacidade: ");
-        int capacidade = Integer.parseInt(input.nextLine());
 
-        Sala sala = new Sala();
-        sala.setCodigoSala(codSala);
-        sala.setCodigoBloco(codBloco);
-        sala.setNomeSala(nomeSala);
-        sala.setAndar(andar);
-        sala.setCapacidade(capacidade);
+        CompositeKey key = new CompositeKey();
+        key.addKey("codigo_sala", codSala);
 
-        salaDAO.update(sala);
-        System.out.println("\nSala atualizada com sucesso!");
+        Sala sala = salaDAO.findById(key);
+        if (sala != null) {
+            System.out.print("Novo nome da sala: ");
+            String nomeSala = input.nextLine();
+            System.out.print("Novo andar: ");
+            int andar = Integer.parseInt(input.nextLine());
+            System.out.print("Nova capacidade: ");
+            int capacidade = Integer.parseInt(input.nextLine());
+
+            sala.setNomeSala(nomeSala);
+            sala.setAndar(andar);
+            sala.setCapacidade(capacidade);
+
+            salaDAO.update(sala);
+            System.out.println("\nSala atualizada com sucesso!");
+        } else {
+            System.out.println("\nSala não encontrada.");
+        }
     }
 
     public void deleteSala() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Remoção de sala");
+        System.out.println("\n- Exclusão de sala");
         System.out.print("Código da sala: ");
-        String codSala = input.next();
-        System.out.print("Código do bloco: ");
-        String codBloco = input.next();
+        String codSala = input.nextLine();
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_sala", codSala);
-        key.addKey("codigo_bloco", codBloco);
 
         salaDAO.delete(key);
-        System.out.println("\nSala removida com sucesso!");
+        System.out.println("\nSala excluída com sucesso!");
     }
 
     public void findSalaById() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Busca de sala por ID");
+        System.out.println("\n- Busca de sala");
         System.out.print("Código da sala: ");
-        String codSala = input.next();
-        System.out.print("Código do bloco: ");
-        String codBloco = input.next();
+        String codSala = input.nextLine();
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_sala", codSala);
-        key.addKey("codigo_bloco", codBloco);
 
         Sala sala = salaDAO.findById(key);
         if (sala != null) {
@@ -114,7 +112,7 @@ public class SalaController {
         }
 
         for (Sala sala : salas) {
-            System.out.println("\n----------------------------------");
+            System.out.println("------------------------------");
             System.out.println("Código da Sala: " + sala.getCodigoSala());
             System.out.println("Código do Bloco: " + sala.getCodigoBloco());
             System.out.println("Nome: " + sala.getNomeSala());
@@ -122,5 +120,4 @@ public class SalaController {
             System.out.println("Capacidade: " + sala.getCapacidade());
         }
     }
-
 }
