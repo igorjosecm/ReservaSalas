@@ -210,13 +210,13 @@ public class Main {
 
 public class Main {
     public static void main(String[] args) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection con = DatabaseConnection.getConnection()) {
             System.out.println("Conexão estabelecida com sucesso!");
 
             // Exemplo de consulta
             String sql = "SELECT * FROM reserva_salas.sala WHERE capacidade > ?";
 
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
                 stmt.setInt(1, 30);
 
                 try (ResultSet rs = stmt.executeQuery()) {

@@ -1,18 +1,18 @@
 package classes;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Professor {
     private Integer matriculaProfessor;
     private String nomeCompleto;
-    private Date dataNascimento;
+    private LocalDate dataNascimento;
     private String email;
 
 
     public Professor() {
         this.setMatriculaProfessor(0);
         this.setNomeCompleto("");
-        this.setDataNascimento(new Date());
+        this.setDataNascimento(LocalDate.MIN);
         this.setEmail("");
     }
 
@@ -32,11 +32,11 @@ public class Professor {
         this.nomeCompleto = nomeCompleto;
     }
 
-    public Date getDataNascimento() {
+    public LocalDate getDataNascimento() {
         return dataNascimento;
     }
 
-    public void setDataNascimento(Date dataNascimento) {
+    public void setDataNascimento(LocalDate dataNascimento) {
         this.dataNascimento = dataNascimento;
     }
 

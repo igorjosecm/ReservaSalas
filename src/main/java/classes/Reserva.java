@@ -1,14 +1,14 @@
 package classes;
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 
 public class Reserva {
     private Integer idReserva;
     private String codigoSala;
     private Integer matriculaProfessor;
     private String codigoMateria;
-    private Date dataInicio;
-    private Date dataFim;
+    private LocalDate dataInicio;
+    private LocalDate dataFim;
     private LocalTime horaInicio;
     private LocalTime horaFim;
 
@@ -17,10 +17,10 @@ public class Reserva {
         this.setCodigoSala("");
         this.setMatriculaProfessor(0);
         this.setCodigoMateria("");
-        this.setDataInicio(new Date());
-        this.setDataFim(new Date());
-        this.setHoraInicio(LocalTime.MIN);
-        this.setHoraFim(LocalTime.MIN);
+        this.setDataInicio(LocalDate.now());
+        this.setDataFim(LocalDate.now());
+        this.setHoraInicio(LocalTime.now());
+        this.setHoraFim(LocalTime.now());
     }
 
     public Integer getIdReserva() {
@@ -55,19 +55,19 @@ public class Reserva {
         this.codigoMateria = codigoMateria;
     }
 
-    public Date getDataInicio() {
+    public LocalDate getDataInicio() {
         return dataInicio;
     }
 
-    public void setDataInicio(Date dataInicio) {
+    public void setDataInicio(LocalDate dataInicio) {
         this.dataInicio = dataInicio;
     }
 
-    public Date getDataFim() {
+    public LocalDate getDataFim() {
         return dataFim;
     }
 
-    public void setDataFim(Date dataFim) {
+    public void setDataFim(LocalDate dataFim) {
         this.dataFim = dataFim;
     }
 
