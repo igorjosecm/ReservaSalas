@@ -17,8 +17,8 @@ public class SalaDAO extends GenericDAO<Sala> {
     @Override
     protected Sala fromResultSet(ResultSet rs) throws SQLException {
         Sala sala = new Sala();
-        sala.setCodSala(rs.getString("cod_sala"));
-        sala.setCodBloco(rs.getString("cod_bloco"));
+        sala.setCodigoSala(rs.getString("codigo_sala"));
+        sala.setCodigoBloco(rs.getString("codigo_bloco"));
         sala.setNomeSala(rs.getString("nome_sala"));
         sala.setAndar(rs.getInt("andar"));
         sala.setCapacidade(rs.getInt("capacidade"));
@@ -28,8 +28,8 @@ public class SalaDAO extends GenericDAO<Sala> {
     @Override
     protected Object[] getInsertValues(Sala entity) {
         return new Object[] {
-                entity.getCodSala(),
-                entity.getCodBloco(),
+                entity.getCodigoSala(),
+                entity.getCodigoBloco(),
                 entity.getNomeSala(),
                 entity.getAndar(),
                 entity.getCapacidade()
@@ -53,14 +53,16 @@ public class SalaDAO extends GenericDAO<Sala> {
     @Override
     protected List<String> getIdColumns() {
         List<String> idColumns = new ArrayList<>();
-        idColumns.add("cod_sala");
-        idColumns.add("cod_bloco");
+        idColumns.add("codigo_sala");
+        idColumns.add("codigo_bloco");
         return idColumns;
     }
 
     @Override
     protected List<String> getColumns() {
         List<String> columns = new ArrayList<>();
+        columns.add("codigo_sala");
+        columns.add("codigo_bloco");
         columns.add("nome_sala");
         columns.add("andar");
         columns.add("capacidade");
@@ -75,8 +77,8 @@ public class SalaDAO extends GenericDAO<Sala> {
     @Override
     protected CompositeKey getIdValues(Sala entity) {
         CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("cod_sala", entity.getCodSala());
-        compositeKey.addKey("cod_bloco", entity.getCodBloco());
+        compositeKey.addKey("codigo_sala", entity.getCodigoSala());
+        compositeKey.addKey("codigo_bloco", entity.getCodigoBloco());
         return compositeKey;
     }
 

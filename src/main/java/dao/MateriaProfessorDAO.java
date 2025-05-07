@@ -58,6 +58,8 @@ public class MateriaProfessorDAO extends GenericDAO<MateriaProfessor> {
     @Override
     protected List<String> getColumns() {
         List<String> columns = new ArrayList<>();
+        columns.add("codigo_materia");
+        columns.add("matricula_professor");
         columns.add("inicio_periodo");
         columns.add("fim_periodo");
         return columns;

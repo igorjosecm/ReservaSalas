@@ -8,7 +8,6 @@ public class Professor {
     private LocalDate dataNascimento;
     private String email;
 
-
     public Professor() {
         this.setMatriculaProfessor(0);
         this.setNomeCompleto("");

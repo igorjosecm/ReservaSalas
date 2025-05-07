@@ -1,34 +1,34 @@
 package classes;
 
 public class Sala {
-    String codSala;
-    String codBloco;
+    String codigoSala;
+    String codigoBloco;
     String nomeSala;
     int andar;
     int capacidade;
 
     public Sala() {
-        this.setCodSala("");
-        this.setCodBloco("");
+        this.setCodigoSala("");
+        this.setCodigoBloco("");
         this.setNomeSala("");
         this.setAndar(0);
         this.setCapacidade(0);
     }
 
-    public String getCodSala() {
-        return codSala;
+    public String getCodigoSala() {
+        return codigoSala;
     }
 
-    public void setCodSala(String codSala) {
-        this.codSala = codSala;
+    public void setCodigoSala(String codigoSala) {
+        this.codigoSala = codigoSala;
     }
 
-    public String getCodBloco() {
-        return codBloco;
+    public String getCodigoBloco() {
+        return codigoBloco;
     }
 
-    public void setCodBloco(String codBloco) {
-        this.codBloco = codBloco;
+    public void setCodigoBloco(String codigoBloco) {
+        this.codigoBloco = codigoBloco;
     }
 
     public String getNomeSala() {

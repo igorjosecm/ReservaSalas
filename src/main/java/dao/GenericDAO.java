@@ -3,6 +3,7 @@ package dao;
 import classes.CompositeKey;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public abstract class GenericDAO<T> {
     }
 
     public void create(T entity) throws SQLException {
-        String sql = generateInsertSQL(entity);
+        String sql = generateInsertSQL();
         try (PreparedStatement st = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             Object[] values = getInsertValues(entity);
             for (int i = 0; i < values.length; i++) {
@@ -74,6 +75,23 @@ public abstract class GenericDAO<T> {
             }
         }
     }
+
+    public List<T> findAll() throws SQLException {
+        String tableName = getAlias() + "." + getTableName();
+        String sql = "SELECT * FROM " + tableName;
+        List<T> results = new ArrayList<>();
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                results.add(fromResultSet(rs));
+            }
+        }
+
+        return results;
+    }
+
 
     public void update(T entity) throws SQLException {
         String tableName = getAlias() + "." + getTableName();
@@ -110,7 +128,7 @@ public abstract class GenericDAO<T> {
         }
     }
 
-    protected String generateInsertSQL(T entity) {
+    protected String generateInsertSQL() {
         String tableName = getAlias() + "." + getTableName();
         List<String> columns = getColumns();
 

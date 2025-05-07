@@ -70,6 +70,10 @@ public class ReservaDAO extends GenericDAO<Reserva> {
     @Override
     protected List<String> getColumns() {
         List<String> columns = new ArrayList<>();
+        columns.add("id_reserva");
+        columns.add("codigo_sala");
+        columns.add("matricula_professor");
+        columns.add("codigo_materia");
         columns.add("data_inicio");
         columns.add("data_fim");
         columns.add("hora_inicio");

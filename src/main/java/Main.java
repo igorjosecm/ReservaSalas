@@ -1,6 +1,8 @@
 import classes.DatabaseConnection;
 import classes.Reserva;
 import classes.Sala;
+import controllers.SalaController;
+import dao.SalaDAO;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -209,29 +211,103 @@ public class Main {
 */
 
 public class Main {
+    private static Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
-        try (Connection con = DatabaseConnection.getConnection()) {
-            System.out.println("Conexão estabelecida com sucesso!");
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            SalaController salaController = new SalaController(conn);
 
-            // Exemplo de consulta
-            String sql = "SELECT * FROM reserva_salas.sala WHERE capacidade > ?";
+            boolean rodando = true;
+            while (rodando) {
+                printMenu();
+                int choice = getIntInput("Selecione a opção desejada: ");
 
-            try (PreparedStatement stmt = con.prepareStatement(sql)) {
-                stmt.setInt(1, 30);
+                switch (choice) {
+                    case 1:
+                        salaController.createSala();
+                        break;
+                    case 2:
+                        salaController.findSalaById();
+                        break;
+                    case 3:
+                        salaController.updateSala();
+                        break;
+                    case 4:
+                        salaController.deleteSala();
+                        break;
+                    case 5:
+                        salaController.findAllSalas();
+                        break;
+                    case 6:
+                        rodando = false;
+                        break;
+                    default:
+                        System.out.println("Opção inválida! Tente novamente.");
+                        break;
+                }
 
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        System.out.printf("Sala: %s, Capacidade: %d%n",
-                                rs.getString("nome_sala"),
-                                rs.getInt("capacidade"));
-                    }
+                if (rodando) {
+                    System.out.println("\nPressione ENTER para continuar...");
+                    scanner.nextLine();
                 }
             }
+
+            System.out.println("Fechando aplicação. Até mais!");
         } catch (SQLException e) {
-            System.err.println("Erro na conexão com o banco de dados:");
+            System.err.println("Erro ao conectar com o banco de dados: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            DatabaseConnection.close();
+            scanner.close();
+        }
+
+
+//        try (Connection con = DatabaseConnection.getConnection()) {
+//            System.out.println("Conexão estabelecida com sucesso!");
+//
+//
+//            // Exemplo de consulta
+//            String sql = "SELECT * FROM reserva_salas.sala WHERE capacidade > ?";
+//
+//            try (PreparedStatement stmt = con.prepareStatement(sql)) {
+//                stmt.setInt(1, 30);
+//
+//                try (ResultSet rs = stmt.executeQuery()) {
+//                    while (rs.next()) {
+//                        System.out.printf("Sala: %s, Capacidade: %d%n",
+//                                rs.getString("nome_sala"),
+//                                rs.getInt("capacidade"));
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            System.err.println("Erro na conexão com o banco de dados:");
+//            e.printStackTrace();
+//        } finally {
+//            DatabaseConnection.close();
+//        }
+    }
+
+    private static void printMenu() {
+        System.out.println("\n=== Reserva de Salas ===");
+        System.out.println("1. Adicionar sala");
+        System.out.println("2. Buscar sala");
+        System.out.println("3. Alterar sala");
+        System.out.println("4. Excluir sala");
+        System.out.println("5. Listar salas");
+        System.out.println("6. Sair");
+        System.out.println("=============================");
+    }
+
+    private static int getIntInput(String prompt) {
+        while (true) {
+            try {
+                System.out.print(prompt);
+                return Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Valor inválido. Por favor informe um número inteiro.");
+            }
         }
     }
 }
