@@ -18,6 +18,7 @@ public class BlocoController {
 
     public void createBloco() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllBlocos();
         System.out.println("\n- Cadastro de Bloco");
         System.out.print("Código do bloco: ");
         String codBloco = input.nextLine();
@@ -37,6 +38,7 @@ public class BlocoController {
 
     public void updateBloco() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllBlocos();
         System.out.println("\n- Atualização de bloco");
         System.out.print("Código do bloco: ");
         String codBloco = input.nextLine();
@@ -56,6 +58,7 @@ public class BlocoController {
 
     public void deleteBloco() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllBlocos();
         System.out.println("\n- Exclusão de bloco");
         System.out.print("Código do bloco: ");
         String codBloco = input.nextLine();

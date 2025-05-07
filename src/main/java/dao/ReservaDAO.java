@@ -2,11 +2,10 @@ package dao;
 
 import classes.CompositeKey;
 import classes.Reserva;
-import com.zaxxer.hikari.HikariConfig;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,5 +93,29 @@ public class ReservaDAO extends GenericDAO<Reserva> {
     @Override
     protected void setGeneratedId(Reserva entity, ResultSet generatedKeys) throws SQLException {
         entity.setIdReserva(generatedKeys.getInt("id_reserva"));
+    }
+
+    public boolean existeConflitoReserva(String codigoSala, LocalDate dataInicio, LocalDate dataFim,
+                                         LocalTime horaInicio, LocalTime horaFim) throws SQLException  {
+        String tableName = getAlias() + "." + getTableName();
+
+        boolean existeConflitoReserva = false;
+
+        String sql = " SELECT 1 FROM " + tableName + " WHERE codigo_sala = ?1 AND data_inicio <= ?2 AND data_fim >= ?3 AND hora_inicio < ?4 AND hora_fim > ?5 LIMIT 1 ";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, codigoSala);
+            stmt.setDate(2, Date.valueOf(dataInicio));
+            stmt.setDate(3, Date.valueOf(dataFim));
+            stmt.setTime(4, Time.valueOf(horaInicio));
+            stmt.setTime(5, Time.valueOf(horaFim));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()){
+                    existeConflitoReserva = true;
+                }
+            }
+        }
+        return existeConflitoReserva;
     }
 }

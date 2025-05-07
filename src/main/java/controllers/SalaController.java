@@ -19,6 +19,7 @@ public class SalaController {
 
     public void createSala() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findSalasByBloco();
         System.out.println("\n- Cadastro de Sala");
         System.out.print("Código da sala: ");
         String codSala = input.nextLine();
@@ -44,6 +45,7 @@ public class SalaController {
 
     public void updateSala() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findSalasByBloco();
         System.out.println("\n- Atualização de sala");
         System.out.print("Código da sala: ");
         String codSala = input.nextLine();
@@ -73,6 +75,7 @@ public class SalaController {
 
     public void deleteSala() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findSalasByBloco();
         System.out.println("\n- Exclusão de sala");
         System.out.print("Código da sala: ");
         String codigoSala = input.nextLine();

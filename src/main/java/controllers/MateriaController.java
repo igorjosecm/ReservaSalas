@@ -18,6 +18,7 @@ public class MateriaController {
 
     public void createMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllMaterias();
         System.out.println("\n- Cadastro de matéria");
         System.out.print("Código da matéria: ");
         String codMateria = input.nextLine();
@@ -37,6 +38,7 @@ public class MateriaController {
 
     public void updateMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllMaterias();
         System.out.println("\n- Atualização de matéria");
         System.out.print("Código da matéria: ");
         String codMateria = input.nextLine();
@@ -56,6 +58,7 @@ public class MateriaController {
 
     public void deleteMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllMaterias();
         System.out.println("\n- Exclusão de matéria");
         System.out.print("Código da materia: ");
         String codMateria = input.nextLine();

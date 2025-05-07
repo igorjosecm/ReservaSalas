@@ -19,6 +19,8 @@ public class MateriaProfessorController {
 
     private final MateriaController materiaController;
 
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     public MateriaProfessorController(Connection connection) {
         this.materiaProfessorDAO = new MateriaProfessorDAO(connection);
         this.professorController = new ProfessorController(connection);
@@ -27,7 +29,7 @@ public class MateriaProfessorController {
 
     public void createMateriaProfessor() throws SQLException {
         Scanner input = new Scanner(System.in);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        findAllMateriasProfessores();
 
         System.out.println("\n- Relacionar matéria a professor: ");
         materiaController.findAllMaterias();
@@ -70,6 +72,7 @@ public class MateriaProfessorController {
 
     public void deleteMateriaProfessor() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllMateriasProfessores();
         System.out.println("\n- Remoção de relação de materia com professor");
         materiaController.findAllMaterias();
         System.out.println("Código da materia: ");

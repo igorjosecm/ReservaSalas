@@ -19,6 +19,7 @@ public class ProfessorController {
 
     public void createProfessor() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllProfessores();
         System.out.println("\n- Cadastro de professor");
         System.out.print("Matrícula do professor: ");
         Integer matriculaProfessor = input.nextInt();
@@ -41,6 +42,7 @@ public class ProfessorController {
 
     public void updateProfessor() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllProfessores();
         System.out.println("\n- Atualização de professor");
         System.out.print("Matrícula do professor: ");
         Integer matriculaProfessor = input.nextInt();
@@ -63,6 +65,7 @@ public class ProfessorController {
 
     public void deleteProfessor() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllProfessores();
         System.out.println("\n- Exclusão de professor");
         System.out.print("Matrícula do professor: ");
         Integer matriculaProfessor = input.nextInt();

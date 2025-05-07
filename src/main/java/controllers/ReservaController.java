@@ -1,7 +1,6 @@
 package controllers;
 
 import classes.CompositeKey;
-import classes.Professor;
 import classes.Reserva;
 import dao.ReservaDAO;
 import java.sql.Connection;
@@ -26,8 +25,9 @@ public class ReservaController {
 
 
         Scanner input = new Scanner(System.in);
+        findAllReservas();
         System.out.println("\n- Reserva de sala");
-        System.out.print("Código da sala: ");
+        System.out.println("Código da sala: ");
         String codigoSala = input.next();
         System.out.print("Data início da reserva: ");
         LocalDate dataInicio = LocalDate.parse(input.nextLine());
@@ -42,20 +42,18 @@ public class ReservaController {
         System.out.println("Código da materia: ");
         String codMateria = input.nextLine();
 
+        boolean conflito = reservaDAO.existeConflitoReserva(
+                codigoSala,
+                dataInicio,
+                dataFim,
+                horaInicio,
+                horaFim
+        );
 
-//        boolean conflito = verificador.existeConflitoReserva(
-//                1,
-//                LocalDate.of(2025, 5, 10),
-//                LocalDate.of(2025, 5, 10),
-//                LocalTime.of(14, 0),
-//                LocalTime.of(16, 0)
-//        );
-
-//        if (conflito) {
-//            System.out.println("Já existe uma reserva nesse período.");
-//        } else {
-//            System.out.println("Período disponível para reserva.");
-//        }
+        if (conflito) {
+            System.out.println("Já existe uma reserva nesse período.");
+            return;
+        }
 
         Reserva reserva = new Reserva();
         reserva.setCodigoSala(codigoSala);
@@ -73,6 +71,7 @@ public class ReservaController {
 
     public void updateProfessor() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllReservas();
         System.out.println("\n- Atualização de reserva de sala");
         System.out.print("Código da sala: ");
         String codigoSala = input.next();
@@ -90,19 +89,18 @@ public class ReservaController {
         String codMateria = input.nextLine();
 
 
-//        boolean conflito = verificador.existeConflitoReserva(
-//                1,
-//                LocalDate.of(2025, 5, 10),
-//                LocalDate.of(2025, 5, 10),
-//                LocalTime.of(14, 0),
-//                LocalTime.of(16, 0)
-//        );
+        boolean conflito = reservaDAO.existeConflitoReserva(
+                codigoSala,
+                dataInicio,
+                dataFim,
+                horaInicio,
+                horaFim
+        );
 
-//        if (conflito) {
-//            System.out.println("Já existe uma reserva nesse período.");
-//        } else {
-//            System.out.println("Período disponível para reserva.");
-//        }
+        if (conflito) {
+            System.out.println("Já existe uma reserva nesse período.");
+            return;
+        }
 
         Reserva reserva = new Reserva();
         reserva.setCodigoSala(codigoSala);
@@ -119,6 +117,7 @@ public class ReservaController {
 
     public void deleteReserva() throws SQLException {
         Scanner input = new Scanner(System.in);
+        findAllReservas();
         System.out.println("\n- Exclusão de reserva");
         System.out.print("ID da reserva: ");
         Integer idReserva = input.nextInt();
