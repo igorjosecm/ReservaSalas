@@ -15,7 +15,7 @@ public class DatabaseConnection {
 
             config.setJdbcUrl("jdbc:postgresql://pg-tads-udesc-bancodedados2-udesc.b.aivencloud.com:20583/BAN2");
             config.setUsername("udesc");
-            config.setPassword("my_password");
+            config.setPassword("MY_PASSWORD");
 
             config.addDataSourceProperty("ssl", "true");
             config.addDataSourceProperty("sslmode", "require");
