@@ -123,10 +123,7 @@ public class ReservaController {
         System.out.print("ID da reserva: ");
         Integer idReserva = input.nextInt();
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("id_reserva", idReserva);
-
-        reservaDAO.delete(key);
+        reservaDAO.delete(idReserva);
         System.out.println("\nReserva excluída com sucesso!");
     }
 
@@ -136,10 +133,7 @@ public class ReservaController {
         System.out.print("ID da reserva: ");
         Integer idReserva = input.nextInt();
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("id_reserva", idReserva);
-
-        Reserva reserva = reservaDAO.findById(key);
+        Reserva reserva = reservaDAO.findById(idReserva);
         if (reserva != null) {
             System.out.println("\nReserva encontrada:");
             printInfoReserva(reserva);

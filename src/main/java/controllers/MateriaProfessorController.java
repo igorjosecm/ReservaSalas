@@ -2,7 +2,6 @@ package controllers;
 
 import classes.CompositeKey;
 import classes.MateriaProfessor;
-import classes.Sala;
 import dao.MateriaProfessorDAO;
 
 import java.sql.Connection;
@@ -15,11 +14,8 @@ import java.util.Scanner;
 
 public class MateriaProfessorController {
     private final MateriaProfessorDAO materiaProfessorDAO;
-
     private final ProfessorController professorController;
-
     private final MateriaController materiaController;
-
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public MateriaProfessorController(Connection connection) {
@@ -61,14 +57,24 @@ public class MateriaProfessorController {
             }
         }
 
-        MateriaProfessor materiaProfessor = new MateriaProfessor();
-        materiaProfessor.setCodigoMateria(codigoMateria);
-        materiaProfessor.setMatriculaProfessor(matriculaProfessor);
-        materiaProfessor.setInicioPeriodo(inicioPeriodo);
-        materiaProfessor.setFimPeriodo(fimPeriodo);
+        CompositeKey compositeKey = new CompositeKey();
+        compositeKey.addKey("matricula_professor", matriculaProfessor);
+        compositeKey.addKey("codigo_materia", codigoMateria);
 
-        materiaProfessorDAO.create(materiaProfessor);
-        System.out.println("\nRelação adicionada com sucesso!");
+        MateriaProfessor materiaProfessor = materiaProfessorDAO.findById(compositeKey);
+        if (materiaProfessor == null) {
+            MateriaProfessor newMateriaProfessor = new MateriaProfessor();
+            newMateriaProfessor.setCodigoMateria(codigoMateria);
+            newMateriaProfessor.setMatriculaProfessor(matriculaProfessor);
+            newMateriaProfessor.setInicioPeriodo(inicioPeriodo);
+            newMateriaProfessor.setFimPeriodo(fimPeriodo);
+
+            materiaProfessorDAO.create(newMateriaProfessor);
+            System.out.println("\nRelação adicionada com sucesso!");
+        } else {
+            System.out.println("\nEssa matéria já foi relacionada a esse professor, " +
+                    "altere o período para atualizá-la.");
+        }
     }
 
     public void deleteMateriaProfessor() throws SQLException {
@@ -82,17 +88,22 @@ public class MateriaProfessorController {
         System.out.println("Matrícula do professor: ");
         Integer matriculaProfessor = input.nextInt();
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_materia", codigoMateria);
-        key.addKey("matricula_professor",matriculaProfessor);
+        CompositeKey compositeKey = new CompositeKey();
+        compositeKey.addKey("codigo_materia", codigoMateria);
+        compositeKey.addKey("matricula_professor",matriculaProfessor);
 
-        materiaProfessorDAO.delete(key);
-        System.out.println("\nRelação removida com sucesso!");
+        MateriaProfessor materiaProfessor = materiaProfessorDAO.findById(compositeKey);
+        if (materiaProfessor != null) {
+            materiaProfessorDAO.delete(compositeKey);
+            System.out.println("\nRelação removida com sucesso!");
+        } else {
+            System.out.println("\nRelação não encontrada.");
+        }
     }
 
     public void findMateriaProfessorById() throws SQLException {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Busca de relação por ID");
+        System.out.println("\n- Busca de relação por matéria e matrícula");
         materiaController.findAllMaterias();
         System.out.println("Código da materia: ");
         String codigoMateria = input.nextLine();

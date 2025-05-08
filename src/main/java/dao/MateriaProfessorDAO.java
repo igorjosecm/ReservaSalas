@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MateriaProfessorDAO extends GenericDAO<MateriaProfessor> {
+public class MateriaProfessorDAO extends GenericDAO<MateriaProfessor, CompositeKey> {
     public MateriaProfessorDAO(Connection connection) {
         super(connection);
     }

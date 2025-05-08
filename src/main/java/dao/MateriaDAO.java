@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MateriaDAO extends GenericDAO<Materia> {
+public class MateriaDAO extends GenericDAO<Materia, String> {
     public MateriaDAO(Connection connection) {
         super(connection);
     }

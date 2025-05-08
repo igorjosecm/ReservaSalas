@@ -6,9 +6,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public abstract class GenericDAO<T> {
+public abstract class GenericDAO<T, K> {
     protected Connection connection;
 
     public GenericDAO(Connection connection) {
@@ -58,30 +57,19 @@ public abstract class GenericDAO<T> {
         }
     }
 
-    public T findById(CompositeKey id) throws SQLException {
+    public T findById(K id) throws SQLException {
         String tableName = getAlias() + "." + getTableName();
         List<String> idColumns = getIdColumns();
         String sql = "SELECT * FROM " + tableName + " WHERE " + generateWhereClause();
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            int i = 1;
-            for (String idColumn : idColumns) {
-                stmt.setObject(i++, id.getKey(idColumn));
-            }
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return fromResultSet(rs);
+            if (id.getClass().equals(CompositeKey.class)) {
+                int i = 1;
+                for (String idColumn : idColumns) {
+                    stmt.setObject(i++, ((CompositeKey) id).getKey(idColumn));
                 }
-                return null;
+            } else {
+                stmt.setObject(1, id);
             }
-        }
-    }
-
-    public T findById(String id) throws SQLException {
-        String tableName = getAlias() + "." + getTableName();
-        String sql = "SELECT * FROM " + tableName + " WHERE " + generateWhereClause();
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setObject(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -131,24 +119,19 @@ public abstract class GenericDAO<T> {
         }
     }
 
-    public void delete(CompositeKey id) throws SQLException {
+    public void delete(K id) throws SQLException {
         String tableName = getAlias() + "." + getTableName();
         List<String> idColumns = getIdColumns();
         String sql = "DELETE FROM " + tableName + " WHERE " + generateWhereClause();
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            int i = 1;
-            for (String idColumn : idColumns) {
-                stmt.setObject(i++, id.getKey(idColumn));
+            if (id.getClass().equals(CompositeKey.class)) {
+                int i = 1;
+                for (String idColumn : idColumns) {
+                    stmt.setObject(i++, ((CompositeKey) id).getKey(idColumn));
+                }
+            } else {
+                stmt.setObject(1, id);
             }
-            stmt.executeUpdate();
-        }
-    }
-
-    public void delete(String id) throws SQLException {
-        String tableName = getAlias() + "." + getTableName();
-        String sql = "DELETE FROM " + tableName + " WHERE " + generateWhereClause();
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setObject(1, id);
             stmt.executeUpdate();
         }
     }
