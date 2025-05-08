@@ -1,0 +1,19 @@
+Instruções para rodar o programa:
+
+**Instruções para fazer a API funcionar**
+1. Você pode utilizar o backup do banco no postgres ou utilizar as credenciais do meu banco hospedado (porém ele pode ter desligado automaticamente por inatividade),
+será necessário alterar os seguintes dados na classe DatabaseConnection:
+
+- url: jdbc:postgresql://pg-tads-udesc-bancodedados2-udesc.b.aivencloud.com:20583/BAN2?ssl=require
+- user: udesc
+- senha: AVNS_608n3SDUiRlWRQap8ED
+
+2. Após rodar o banco, abrir o projeto no Intellij ou outra IDE, o projeto foi criado com maven, então é necessário atualizar as dependências na IDE.
+3. A aplicação roda em terminal Java, utilizando o projeto de exemplo da professora como base.
+4. O menu principal redireciona para os menus de cada classe, sendo elas:
+	1. Reservar sala
+        2. Cadastro de salas
+        3. Cadastro de blocos
+        4. Matrícula de professores
+        5. Cadastro de matérias
+5. Dentro de cada opção estão as demais operações CRUD para cada tabela, além dos relatórios.
