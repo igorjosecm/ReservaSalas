@@ -47,6 +47,9 @@ public class MateriaView {
                 case 9:
                     materiaProfessorController.findAllMateriasProfessores();
                     break;
+                case 10:
+                    materiaProfessorController.findMateriasOfProfessor();
+                    break;
                 case 0:
                     rodando = false;
                     break;
@@ -73,6 +76,7 @@ public class MateriaView {
         System.out.println("7. Excluir relação matéria e professor");
         System.out.println("8. Buscar relação matéria e professor");
         System.out.println("9. Listar relações matéria e professor");
+        System.out.println("10. Relatório de matérias que há relação com o professor");
         System.out.println("0. Voltar ao menu principal");
         System.out.println("==============================");
     }
