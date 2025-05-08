@@ -73,5 +73,10 @@ public class BlocoDAO extends GenericDAO<Bloco, String> {
     }
 
     @Override
+    protected String getGeneratedKey() {
+        return null;
+    }
+
+    @Override
     protected void setGeneratedId(Bloco entity, ResultSet generatedKeys) throws SQLException {}
 }

@@ -30,6 +30,8 @@ public abstract class GenericDAO<T, K> {
 
     protected abstract CompositeKey getIdValues(T entity);
 
+    protected abstract String getGeneratedKey();
+
     protected String generateWhereClause() {
         List<String> idColumns = getIdColumns();
         StringBuilder where = new StringBuilder();
@@ -138,7 +140,12 @@ public abstract class GenericDAO<T, K> {
 
     protected String generateInsertSQL() {
         String tableName = getAlias() + "." + getTableName();
-        List<String> columns = getIdColumns();
+        List<String> columns = new ArrayList<>();
+        String generatedKey = getGeneratedKey();
+
+        if (generatedKey == null || generatedKey.isEmpty()) {
+            columns.addAll(getIdColumns());
+        }
         columns.addAll(getColumns());
 
         StringBuilder sql = new StringBuilder("INSERT INTO ")

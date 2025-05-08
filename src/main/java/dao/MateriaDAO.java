@@ -73,5 +73,10 @@ public class MateriaDAO extends GenericDAO<Materia, String> {
     }
 
     @Override
+    protected String getGeneratedKey() {
+        return null;
+    }
+
+    @Override
     protected void setGeneratedId(Materia entity, ResultSet generatedKeys) throws SQLException {}
 }

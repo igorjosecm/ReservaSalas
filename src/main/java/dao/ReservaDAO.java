@@ -31,7 +31,6 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
     @Override
     protected Object[] getInsertValues(Reserva entity) {
         return new Object[] {
-                entity.getIdReserva(),
                 entity.getCodigoSala(),
                 entity.getMatriculaProfessor(),
                 entity.getCodigoMateria(),
@@ -90,6 +89,11 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
     }
 
     @Override
+    protected String getGeneratedKey() {
+        return "id_reserva";
+    }
+
+    @Override
     protected void setGeneratedId(Reserva entity, ResultSet generatedKeys) throws SQLException {
         entity.setIdReserva(generatedKeys.getInt("id_reserva"));
     }
@@ -100,7 +104,7 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
 
         boolean existeConflitoReserva = false;
 
-        String sql = " SELECT 1 FROM " + tableName + " WHERE codigo_sala = ?1 AND data_inicio <= ?2 AND data_fim >= ?3 AND hora_inicio < ?4 AND hora_fim > ?5 LIMIT 1 ";
+        String sql = " SELECT 1 FROM " + tableName + " WHERE codigo_sala = ? AND data_inicio <= ? AND data_fim >= ? AND hora_inicio < ? AND hora_fim > ? LIMIT 1 ";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, codigoSala);
@@ -162,11 +166,13 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
     }
 
     public List<Reserva> findAllReservasByBloco(String codigoBloco) throws SQLException  {
-        String tableName = getAlias() + "." + getTableName();
-
         List<Reserva> reservas = new ArrayList<>();
 
-        String sql = " SELECT * FROM " + tableName + " join sala on (sala.codigo_sala = " + tableName + ".codigo_sala) WHERE sala.codigo_bloco = ?1 ";
+        String sql =
+                " SELECT reserva.id_reserva, reserva.codigo_sala, reserva.matricula_professor, reserva.codigo_materia," +
+                        " reserva.data_inicio, reserva.data_fim, reserva.hora_inicio, reserva.hora_fim" +
+                        " FROM reserva_salas.reserva join reserva_salas.sala" +
+                        " on (sala.codigo_sala = " + getTableName() + ".codigo_sala) WHERE sala.codigo_bloco = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, codigoBloco);

@@ -82,6 +82,11 @@ public class MateriaProfessorDAO extends GenericDAO<MateriaProfessor, CompositeK
     @Override
     protected void setGeneratedId(MateriaProfessor entity, ResultSet generatedKeys) throws SQLException {}
 
+    @Override
+    protected String getGeneratedKey() {
+        return null;
+    }
+
     public List<MateriaProfessor> findAllMateriasOfProfessor(Integer matriculaProfessor) throws SQLException  {
         String tableName = getAlias() + "." + getTableName();
         List<MateriaProfessor> materiasProfessor = new ArrayList<>();

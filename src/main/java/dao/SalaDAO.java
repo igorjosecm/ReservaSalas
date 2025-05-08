@@ -82,6 +82,11 @@ public class SalaDAO extends GenericDAO<Sala, String> {
     }
 
     @Override
+    protected String getGeneratedKey() {
+        return null;
+    }
+
+    @Override
     protected void setGeneratedId(Sala entity, ResultSet generatedKeys) throws SQLException {}
 
     public List<Sala> findSalasByBloco(String codigoBloco) throws SQLException  {

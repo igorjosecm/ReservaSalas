@@ -77,5 +77,10 @@ public class ProfessorDAO extends GenericDAO<Professor, Integer> {
     }
 
     @Override
+    protected String getGeneratedKey() {
+        return null;
+    }
+
+    @Override
     protected void setGeneratedId(Professor entity, ResultSet generatedKeys) throws SQLException {}
 }
