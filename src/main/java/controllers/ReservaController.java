@@ -2,6 +2,7 @@ package controllers;
 
 import classes.CompositeKey;
 import classes.Reserva;
+import classes.Sala;
 import dao.ReservaDAO;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -69,7 +70,7 @@ public class ReservaController {
         System.out.println("\nReserva registrada com sucesso!");
     }
 
-    public void updateProfessor() throws SQLException {
+    public void updateReserva() throws SQLException {
         Scanner input = new Scanner(System.in);
         findAllReservas();
         System.out.println("\n- Atualização de reserva de sala");
@@ -141,15 +142,53 @@ public class ReservaController {
         Reserva reserva = reservaDAO.findById(key);
         if (reserva != null) {
             System.out.println("\nReserva encontrada:");
-            System.out.println("Código da sala: " + reserva.getCodigoSala());
-            System.out.println("Matrícula do professor: " + reserva.getMatriculaProfessor());
-            System.out.println("Código da matéria: " + reserva.getCodigoMateria());
-            System.out.println("Data de início reserva: " + reserva.getDataInicio());
-            System.out.println("Data de fim reserva: " + reserva.getDataFim());
-            System.out.println("Horário de início reserva: " + reserva.getHoraInicio());
-            System.out.println("Horário de fim reserva: " + reserva.getHoraFim());
+            printInfoReserva(reserva);
         } else {
             System.out.println("\nReserva não encontrada.");
+        }
+    }
+
+    public void findReservasByBloco() throws SQLException {
+        Scanner input = new Scanner(System.in);
+        System.out.println("\n- Buscar reservas por bloco");
+        System.out.print("Código do bloco: ");
+        String codigoBloco = input.nextLine();
+
+        List<Reserva> reservas = reservaDAO.findAllReservasByBloco(codigoBloco);
+
+        if (reservas.isEmpty()) {
+            System.out.println("\nNenhuma reserva encontrada.");
+            return;
+        }
+
+        for (Reserva reserva : reservas) {
+            System.out.println("------------------------------");
+            printInfoReserva(reserva);
+        }
+    }
+
+    public void findReservasByPeriodo() throws SQLException {
+        Scanner input = new Scanner(System.in);
+        System.out.println("\n- Buscar reservas por periodo");
+        System.out.print("Data início da reserva: ");
+        LocalDate dataInicio = LocalDate.parse(input.nextLine());
+        System.out.print("Data fim da reserva: ");
+        LocalDate dataFim= LocalDate.parse(input.nextLine());
+        System.out.print("Horário início da reserva: ");
+        LocalTime horaInicio = LocalTime.parse(input.nextLine(), formatter);
+        System.out.print("Horário fim da reserva: ");
+        LocalTime horaFim = LocalTime.parse(input.nextLine(), formatter);
+
+        List<Reserva> reservas = reservaDAO.findAllReservasByPeriodo(dataInicio ,dataFim ,horaInicio, horaFim);
+
+        if (reservas.isEmpty()) {
+            System.out.println("\nNenhuma reserva encontrada.");
+            return;
+        }
+
+        for (Reserva reserva : reservas) {
+            System.out.println("------------------------------");
+            printInfoReserva(reserva);
         }
     }
 
@@ -164,14 +203,18 @@ public class ReservaController {
 
         for (Reserva reserva : reservas) {
             System.out.println("------------------------------");
-            System.out.println("ID da reserva: " + reserva.getIdReserva());
-            System.out.println("Código da sala: " + reserva.getCodigoSala());
-            System.out.println("Matrícula do professor: " + reserva.getMatriculaProfessor());
-            System.out.println("Código da matéria: " + reserva.getCodigoMateria());
-            System.out.println("Data de início reserva: " + reserva.getDataInicio());
-            System.out.println("Data de fim reserva: " + reserva.getDataFim());
-            System.out.println("Horário de início reserva: " + reserva.getHoraInicio());
-            System.out.println("Horário de fim reserva: " + reserva.getHoraFim());
+            printInfoReserva(reserva);
         }
+    }
+
+    private void printInfoReserva(Reserva reserva) {
+        System.out.println("ID da reserva: " + reserva.getIdReserva());
+        System.out.println("Código da sala: " + reserva.getCodigoSala());
+        System.out.println("Matrícula do professor: " + reserva.getMatriculaProfessor());
+        System.out.println("Código da matéria: " + reserva.getCodigoMateria());
+        System.out.println("Data de início reserva: " + reserva.getDataInicio());
+        System.out.println("Data de fim reserva: " + reserva.getDataFim());
+        System.out.println("Horário de início reserva: " + reserva.getHoraInicio());
+        System.out.println("Horário de fim reserva: " + reserva.getHoraFim());
     }
 }

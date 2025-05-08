@@ -15,7 +15,7 @@ public class MainView {
 
             switch (opcao) {
                 case 1:
-                    //
+                    ReservaView.menuReserva(con, input);
                     break;
                 case 2:
                     SalaView.menuSala(con, input);
@@ -24,10 +24,10 @@ public class MainView {
                     BlocoView.menuBloco(con, input);
                     break;
                 case 4:
-                    //
+                    ProfessorView.menuProfessor(con, input);
                     break;
                 case 5:
-                    //
+                    MateriaView.menuMateria(con, input);
                     break;
                 case 6:
                     rodando = false;

@@ -2,8 +2,11 @@ package dao;
 
 import classes.CompositeKey;
 import classes.MateriaProfessor;
+import classes.Professor;
+import classes.Sala;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -78,4 +81,22 @@ public class MateriaProfessorDAO extends GenericDAO<MateriaProfessor> {
 
     @Override
     protected void setGeneratedId(MateriaProfessor entity, ResultSet generatedKeys) throws SQLException {}
+
+    public List<MateriaProfessor> findAllMateriasOfProfessor(Integer matriculaProfessor) throws SQLException  {
+        String tableName = getAlias() + "." + getTableName();
+        List<MateriaProfessor> materiasProfessor = new ArrayList<>();
+
+        String sql = "SELECT * FROM " + tableName + " WHERE matricula_professor = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, matriculaProfessor);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    materiasProfessor.add(fromResultSet(rs));
+                }
+            }
+        }
+        return materiasProfessor;
+    }
 }
