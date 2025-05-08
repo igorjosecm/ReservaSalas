@@ -1,8 +1,8 @@
 package controllers;
 
 import classes.Bloco;
-import classes.CompositeKey;
 import dao.BlocoDAO;
+import helpers.Helpers;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,68 +18,74 @@ public class BlocoController {
 
     public void createBloco() throws SQLException {
         Scanner input = new Scanner(System.in);
-        findAllBlocos();
         System.out.println("\n- Cadastro de Bloco");
         System.out.print("Código do bloco: ");
-        String codBloco = input.nextLine();
-        System.out.print("Nome do bloco: ");
-        String nomeBloco = input.nextLine();
-        System.out.print("Número de andares: ");
-        int numAndares = Integer.parseInt(input.nextLine());
+        String codigoBloco = input.nextLine();
 
-        Bloco bloco = new Bloco();
-        bloco.setCodigoBloco(codBloco);
-        bloco.setNomeBloco(nomeBloco);
-        bloco.setNumAndares(numAndares);
+        Bloco bloco = blocoDAO.findById(codigoBloco);
+        if (bloco == null) {
+            System.out.print("Nome do bloco: ");
+            String nomeBloco = input.nextLine();
+            System.out.print("Número de andares: ");
+            int numAndares = Helpers.getIntInput(input);
 
-        blocoDAO.create(bloco);
-        System.out.println("\nBloco criado com sucesso!");
+            Bloco newBloco = new Bloco();
+            newBloco.setCodigoBloco(codigoBloco);
+            newBloco.setNomeBloco(nomeBloco);
+            newBloco.setNumAndares(numAndares);
+
+            blocoDAO.create(newBloco);
+            System.out.println("\nBloco criado com sucesso!");
+        } else {
+            System.out.println("\nEsse bloco já existe! Informe um código diferente.");
+        }
     }
 
     public void updateBloco() throws SQLException {
         Scanner input = new Scanner(System.in);
-        findAllBlocos();
         System.out.println("\n- Atualização de bloco");
         System.out.print("Código do bloco: ");
-        String codBloco = input.nextLine();
-        System.out.print("Nome do bloco: ");
-        String nomeBloco = input.nextLine();
-        System.out.print("Número de andares: ");
-        int numAndares = Integer.parseInt(input.nextLine());
+        String codigoBloco = input.nextLine();
 
-        Bloco bloco = new Bloco();
-        bloco.setCodigoBloco(codBloco);
-        bloco.setNomeBloco(nomeBloco);
-        bloco.setNumAndares(numAndares);
+        Bloco bloco = blocoDAO.findById(codigoBloco);
+        if (bloco != null) {
+            System.out.print("Nome do bloco: ");
+            String nomeBloco = input.nextLine();
+            System.out.print("Número de andares: ");
+            int numAndares = Helpers.getIntInput(input);
 
-        blocoDAO.update(bloco);
-        System.out.println("\nBloco atualizado com sucesso!");
+            bloco.setNomeBloco(nomeBloco);
+            bloco.setNumAndares(numAndares);
+
+            blocoDAO.update(bloco);
+            System.out.println("\nBloco atualizado com sucesso!");
+        } else {
+            System.out.println("\nBloco não encontrado.");
+        }
     }
 
     public void deleteBloco() throws SQLException {
         Scanner input = new Scanner(System.in);
-        findAllBlocos();
         System.out.println("\n- Exclusão de bloco");
         System.out.print("Código do bloco: ");
-        String codBloco = input.nextLine();
+        String codigoBloco = input.nextLine();
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_bloco", codBloco);
-
-        blocoDAO.delete(key);
-        System.out.println("\nBloco excluído com sucesso!");
+        Bloco bloco = blocoDAO.findById(codigoBloco);
+        if (bloco != null) {
+            blocoDAO.delete(codigoBloco);
+            System.out.println("\nBloco excluído com sucesso!");
+        } else {
+            System.out.println("\nBloco não encontrado.");
+        }
     }
 
     public void findBlocoById() throws SQLException {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Busca de bloco");
         System.out.print("Código do bloco: ");
-        String codBloco = input.nextLine();
+        String codigoBloco = input.nextLine();
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_bloco", codBloco);
-
-        Bloco bloco = blocoDAO.findById(key);
+        Bloco bloco = blocoDAO.findById(codigoBloco);
         if (bloco != null) {
             System.out.println("\nBloco encontrado:");
             System.out.println("Nome: " + bloco.getNomeBloco());

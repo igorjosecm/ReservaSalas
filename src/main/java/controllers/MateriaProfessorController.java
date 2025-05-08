@@ -34,7 +34,7 @@ public class MateriaProfessorController {
         System.out.println("\n- Relacionar matéria a professor: ");
         materiaController.findAllMaterias();
         System.out.println("Código da materia: ");
-        String codMateria = input.nextLine();
+        String codigoMateria = input.nextLine();
         professorController.findAllProfessores();
         System.out.println("Matrícula do professor: ");
         Integer matriculaProfessor = input.nextInt();
@@ -61,7 +61,7 @@ public class MateriaProfessorController {
         }
 
         MateriaProfessor materiaProfessor = new MateriaProfessor();
-        materiaProfessor.setCodigoMateria(codMateria);
+        materiaProfessor.setCodigoMateria(codigoMateria);
         materiaProfessor.setMatriculaProfessor(matriculaProfessor);
         materiaProfessor.setInicioPeriodo(inicioPeriodo);
         materiaProfessor.setFimPeriodo(fimPeriodo);
@@ -76,13 +76,13 @@ public class MateriaProfessorController {
         System.out.println("\n- Remoção de relação de materia com professor");
         materiaController.findAllMaterias();
         System.out.println("Código da materia: ");
-        String codMateria = input.nextLine();
+        String codigoMateria = input.nextLine();
         professorController.findAllProfessores();
         System.out.println("Matrícula do professor: ");
         Integer matriculaProfessor = input.nextInt();
 
         CompositeKey key = new CompositeKey();
-        key.addKey("codigo_materia", codMateria);
+        key.addKey("codigo_materia", codigoMateria);
         key.addKey("matricula_professor",matriculaProfessor);
 
         materiaProfessorDAO.delete(key);
@@ -94,13 +94,13 @@ public class MateriaProfessorController {
         System.out.println("\n- Busca de relação por ID");
         materiaController.findAllMaterias();
         System.out.println("Código da materia: ");
-        String codMateria = input.nextLine();
+        String codigoMateria = input.nextLine();
         professorController.findAllProfessores();
         System.out.println("Matrícula do professor: ");
         Integer matriculaProfessor = input.nextInt();
 
         CompositeKey key = new CompositeKey();
-        key.addKey("codigo_materia", codMateria);
+        key.addKey("codigo_materia", codigoMateria);
         key.addKey("matricula_professor",matriculaProfessor);
 
         MateriaProfessor materiaProfessor = materiaProfessorDAO.findById(key);

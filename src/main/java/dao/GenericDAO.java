@@ -6,6 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class GenericDAO<T> {
     protected Connection connection;
@@ -76,6 +77,21 @@ public abstract class GenericDAO<T> {
         }
     }
 
+    public T findById(String id) throws SQLException {
+        String tableName = getAlias() + "." + getTableName();
+        String sql = "SELECT * FROM " + tableName + " WHERE " + generateWhereClause();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setObject(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return fromResultSet(rs);
+                }
+                return null;
+            }
+        }
+    }
+
     public List<T> findAll() throws SQLException {
         String tableName = getAlias() + "." + getTableName();
         String sql = "SELECT * FROM " + tableName;
@@ -128,9 +144,19 @@ public abstract class GenericDAO<T> {
         }
     }
 
+    public void delete(String id) throws SQLException {
+        String tableName = getAlias() + "." + getTableName();
+        String sql = "DELETE FROM " + tableName + " WHERE " + generateWhereClause();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setObject(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
     protected String generateInsertSQL() {
         String tableName = getAlias() + "." + getTableName();
-        List<String> columns = getColumns();
+        List<String> columns = getIdColumns();
+        columns.addAll(getColumns());
 
         StringBuilder sql = new StringBuilder("INSERT INTO ")
                 .append(tableName)

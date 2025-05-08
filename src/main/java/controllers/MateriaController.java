@@ -1,8 +1,8 @@
 package controllers;
 
-import classes.CompositeKey;
 import classes.Materia;
 import dao.MateriaDAO;
+import helpers.Helpers;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,70 +18,76 @@ public class MateriaController {
 
     public void createMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
-        findAllMaterias();
         System.out.println("\n- Cadastro de matéria");
         System.out.print("Código da matéria: ");
-        String codMateria = input.nextLine();
-        System.out.print("Nome da matéria: ");
-        String nomeMateria = input.nextLine();
-        System.out.print("Carga horária: ");
-        int cargaHoraria = Integer.parseInt(input.nextLine());
+        String codigoMateria = input.nextLine();
 
-        Materia materia = new Materia();
-        materia.setCodigoMateria(codMateria);
-        materia.setNomeMateria(nomeMateria);
-        materia.setCargaHoraria(cargaHoraria);
+        Materia materia = materiaDAO.findById(codigoMateria);
+        if (materia == null) {
+            System.out.print("Nome da matéria: ");
+            String nomeMateria = input.nextLine();
+            System.out.print("Carga horária: ");
+            int cargaHoraria = Helpers.getIntInput(input);
 
-        materiaDAO.create(materia);
-        System.out.println("\nMateria criada com sucesso!");
+            Materia newMateria = new Materia();
+            newMateria.setCodigoMateria(codigoMateria);
+            newMateria.setNomeMateria(nomeMateria);
+            newMateria.setCargaHoraria(cargaHoraria);
+
+            materiaDAO.create(newMateria);
+            System.out.println("\nMateria criada com sucesso!");
+        } else {
+            System.out.println("\nEssa matéria já existe! Informe um código diferente.");
+        }
     }
 
     public void updateMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
-        findAllMaterias();
         System.out.println("\n- Atualização de matéria");
         System.out.print("Código da matéria: ");
-        String codMateria = input.nextLine();
-        System.out.print("Novo nome da matéria: ");
-        String nomeMateria = input.nextLine();
-        System.out.print("Novo carga horária: ");
-        int cargaHoraria = Integer.parseInt(input.nextLine());
+        String codigoMateria = input.nextLine();
 
-        Materia materia = new Materia();
-        materia.setCodigoMateria(codMateria);
-        materia.setNomeMateria(nomeMateria);
-        materia.setCargaHoraria(cargaHoraria);
+        Materia materia = materiaDAO.findById(codigoMateria);
+        if (materia != null) {
+            System.out.print("Novo nome da matéria: ");
+            String nomeMateria = input.nextLine();
+            System.out.print("Novo carga horária: ");
+            int cargaHoraria = Helpers.getIntInput(input);
 
-        materiaDAO.update(materia);
-        System.out.println("\nMatéria atualizada com sucesso!");
+            materia.setNomeMateria(nomeMateria);
+            materia.setCargaHoraria(cargaHoraria);
+
+            materiaDAO.update(materia);
+            System.out.println("\nMatéria atualizada com sucesso!");
+        } else {
+            System.out.println("\nMatéria não encontrada.");
+        }
     }
 
     public void deleteMateria() throws SQLException {
         Scanner input = new Scanner(System.in);
-        findAllMaterias();
         System.out.println("\n- Exclusão de matéria");
         System.out.print("Código da materia: ");
-        String codMateria = input.nextLine();
+        String codigoMateria = input.nextLine();
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_materia", codMateria);
-
-        materiaDAO.delete(key);
-        System.out.println("\nMatéria excluída com sucesso!");
+        Materia materia = materiaDAO.findById(codigoMateria);
+        if (materia != null) {
+            materiaDAO.delete(codigoMateria);
+            System.out.println("\nMatéria excluída com sucesso!");
+        } else {
+            System.out.println("\nMatéria não encontrada.");
+        }
     }
 
     public void findMateriaById() throws SQLException {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Busca de matéria");
         System.out.print("Código da matéria: ");
-        String codMateria = input.nextLine();
+        String codigoMateria = input.nextLine();
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_materia", codMateria);
-
-        Materia materia = materiaDAO.findById(key);
+        Materia materia = materiaDAO.findById(codigoMateria);
         if (materia != null) {
-            System.out.println("\nMateria encontrada:");
+            System.out.println("\nMatéria encontrada:");
             System.out.println("Nome: " + materia.getNomeMateria());
             System.out.println("Carga horária: " + materia.getCargaHoraria());
         } else {

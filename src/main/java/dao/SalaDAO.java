@@ -61,7 +61,6 @@ public class SalaDAO extends GenericDAO<Sala> {
     @Override
     protected List<String> getColumns() {
         List<String> columns = new ArrayList<>();
-        columns.add("codigo_sala");
         columns.add("codigo_bloco");
         columns.add("nome_sala");
         columns.add("andar");

@@ -58,7 +58,6 @@ public class ProfessorDAO extends GenericDAO<Professor> {
     @Override
     protected List<String> getColumns() {
         List<String> columns = new ArrayList<>();
-        columns.add("matricula_professor");
         columns.add("nome_completo");
         columns.add("data_nascimento");
         columns.add("email");

@@ -55,7 +55,6 @@ public class MateriaDAO extends GenericDAO<Materia> {
     @Override
     protected List<String> getColumns() {
         List<String> columns = new ArrayList<>();
-        columns.add("codigo_materia");
         columns.add("nome_materia");
         columns.add("carga_horaria");
         return columns;

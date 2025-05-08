@@ -55,7 +55,6 @@ public class BlocoDAO extends GenericDAO<Bloco> {
     @Override
     protected List<String> getColumns() {
         List<String> columns = new ArrayList<>();
-        columns.add("codigo_bloco");
         columns.add("nome_bloco");
         columns.add("num_andares");
         return columns;
