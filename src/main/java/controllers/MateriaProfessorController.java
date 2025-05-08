@@ -2,6 +2,7 @@ package controllers;
 
 import classes.CompositeKey;
 import classes.MateriaProfessor;
+import classes.Sala;
 import dao.MateriaProfessorDAO;
 
 import java.sql.Connection;
@@ -105,11 +106,28 @@ public class MateriaProfessorController {
 
         MateriaProfessor materiaProfessor = materiaProfessorDAO.findById(key);
         if (materiaProfessor != null) {
-            System.out.println("\nRelação encontrada:");
-            System.out.println("Início período: " + materiaProfessor.getInicioPeriodo());
-            System.out.println("Fim período: " + materiaProfessor.getFimPeriodo());
+            printInfoMateriaProfessor(materiaProfessor);
         } else {
             System.out.println("\nRelação não encontrada.");
+        }
+    }
+
+    public void findMateriasOfProfessor() throws SQLException {
+        Scanner input = new Scanner(System.in);
+        System.out.println("\n- Buscar matérias relacionadas ao professor");
+        System.out.print("Matrícula do professor: ");
+        Integer matriculaProfessor = input.nextInt();
+
+        List<MateriaProfessor> materiaProfessors = materiaProfessorDAO.findAllMateriasOfProfessor(matriculaProfessor);
+
+        if (materiaProfessors.isEmpty()) {
+            System.out.println("\nNenhuma matéria relacionada ao professor.");
+            return;
+        }
+
+        for (MateriaProfessor materiaProfessor : materiaProfessors) {
+            System.out.println("------------------------------");
+            printInfoMateriaProfessor(materiaProfessor);
         }
     }
 
@@ -124,10 +142,14 @@ public class MateriaProfessorController {
 
         for (MateriaProfessor materiaProfessor : materiasProfessores) {
             System.out.println("------------------------------");
-            System.out.println("Código da materia: " + materiaProfessor.getCodigoMateria());
-            System.out.println("Matrícula do professor: " + materiaProfessor.getMatriculaProfessor());
-            System.out.println("Início período: " + materiaProfessor.getInicioPeriodo());
-            System.out.println("Fim período: " + materiaProfessor.getFimPeriodo());
+            printInfoMateriaProfessor(materiaProfessor);
         }
+    }
+
+    private void printInfoMateriaProfessor(MateriaProfessor materiaProfessor) {
+        System.out.println("Código da materia: " + materiaProfessor.getCodigoMateria());
+        System.out.println("Matrícula do professor: " + materiaProfessor.getMatriculaProfessor());
+        System.out.println("Início período: " + materiaProfessor.getInicioPeriodo());
+        System.out.println("Fim período: " + materiaProfessor.getFimPeriodo());
     }
 }

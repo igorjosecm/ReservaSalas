@@ -117,4 +117,66 @@ public class ReservaDAO extends GenericDAO<Reserva> {
         }
         return existeConflitoReserva;
     }
+
+    public List<Reserva> findAllReservasByPeriodo(LocalDate dataInicio, LocalDate dataFim,
+                                         LocalTime horaInicio, LocalTime horaFim) throws SQLException  {
+        String tableName = getAlias() + "." + getTableName();
+
+        List<Reserva> reservas = new ArrayList<>();
+
+        String sql = " SELECT * FROM " + tableName + " WHERE id_reserva > 0 ";
+        if (dataInicio != null) {
+            sql += " AND data_inicio > ?1 ";
+        }
+        if (dataFim != null) {
+            sql += " AND data_fim < ?2 ";
+        }
+        if (horaInicio != null) {
+            sql += " AND hora_inicio => ?3 ";
+        }
+        if (horaFim != null) {
+            sql += " AND hora_fim <= ?4 ";
+        }
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            if (dataInicio != null) {
+                stmt.setDate(1, Date.valueOf(dataInicio.minusDays(1)));
+            }
+            if (dataFim != null) {
+                stmt.setDate(2, Date.valueOf(dataFim.plusDays(1)));
+            }
+            if (horaInicio != null) {
+                stmt.setTime(3, Time.valueOf(horaInicio));
+            }
+            if (horaFim != null) {
+                stmt.setTime(4, Time.valueOf(horaFim));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()){
+                    reservas.add(fromResultSet(rs));
+                }
+            }
+        }
+        return reservas;
+    }
+
+    public List<Reserva> findAllReservasByBloco(String codigoBloco) throws SQLException  {
+        String tableName = getAlias() + "." + getTableName();
+
+        List<Reserva> reservas = new ArrayList<>();
+
+        String sql = " SELECT * FROM " + tableName + " join sala on (sala.codigo_sala = " + tableName + ".codigo_sala) WHERE sala.codigo_bloco = ?1 ";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, codigoBloco);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()){
+                    reservas.add(fromResultSet(rs));
+                }
+            }
+        }
+        return reservas;
+    }
 }
