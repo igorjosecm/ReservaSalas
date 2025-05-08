@@ -63,19 +63,6 @@ public class ReservaController {
         System.out.print("Código da materia: ");
         String codMateria = input.nextLine();
 
-        boolean conflito = reservaDAO.existeConflitoReserva(
-                codigoSala,
-                dataInicio,
-                dataFim,
-                horaInicio,
-                horaFim
-        );
-
-        if (conflito) {
-            System.out.println("Já existe uma reserva nesse período.");
-            return;
-        }
-
         Reserva reserva = new Reserva();
         reserva.setCodigoSala(codigoSala);
         reserva.setMatriculaProfessor(matriculaProfessor);
@@ -127,19 +114,6 @@ public class ReservaController {
         System.out.print("Código da materia: ");
         String codMateria = input.nextLine();
 
-
-        boolean conflito = reservaDAO.existeConflitoReserva(
-                codigoSala,
-                dataInicio,
-                dataFim,
-                horaInicio,
-                horaFim
-        );
-
-        if (conflito) {
-            System.out.println("Já existe uma reserva nesse período.");
-            return;
-        }
 
         Reserva reserva = new Reserva();
         reserva.setCodigoSala(codigoSala);
