@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProfessorDAO extends GenericDAO<Professor> {
+public class ProfessorDAO extends GenericDAO<Professor, Integer> {
     public ProfessorDAO(Connection connection) {
         super(connection);
     }

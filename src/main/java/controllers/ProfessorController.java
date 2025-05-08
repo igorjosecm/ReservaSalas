@@ -3,6 +3,7 @@ package controllers;
 import classes.CompositeKey;
 import classes.Professor;
 import dao.ProfessorDAO;
+import helpers.Helpers;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,22 +23,33 @@ public class ProfessorController {
         findAllProfessores();
         System.out.println("\n- Cadastro de professor");
         System.out.print("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
-        System.out.print("Nome completo: ");
-        String nomeCompleto = input.nextLine();
-        System.out.print("Data de nascimento: ");
-        LocalDate dataNascimento = LocalDate.parse(input.nextLine());
-        System.out.print("Email: ");
-        String email = input.nextLine();
+        Integer matriculaProfessor = Helpers.getIntInput(input);
 
-        Professor professor = new Professor();
-        professor.setMatriculaProfessor(matriculaProfessor);
-        professor.setNomeCompleto(nomeCompleto);
-        professor.setDataNascimento(dataNascimento);
-        professor.setEmail(email);
+        Professor professor = professorDAO.findById(matriculaProfessor);
+        if (professor == null) {
+            System.out.print("Nome completo: ");
+            String nomeCompleto = input.nextLine();
+            System.out.print("Data de nascimento (dd/mm/yyyy): ");
+            LocalDate dataNascimento = Helpers.getLocalDateInput(input);
 
-        professorDAO.create(professor);
-        System.out.println("\nProfessor registrado com sucesso!");
+            if (dataNascimento.isBefore(LocalDate.now())) {
+                System.out.print("Email: ");
+                String email = input.nextLine();
+
+                Professor newProfessor = new Professor();
+                newProfessor.setMatriculaProfessor(matriculaProfessor);
+                newProfessor.setNomeCompleto(nomeCompleto);
+                newProfessor.setDataNascimento(dataNascimento);
+                newProfessor.setEmail(email);
+
+                professorDAO.create(newProfessor);
+                System.out.println("\nProfessor registrado com sucesso!");
+            } else {
+                System.out.println("\nInforme uma data de nascimento válida!");
+            }
+        } else {
+            System.out.println("\nEsse professor já existe! Informe uma matrícula diferente.");
+        }
     }
 
     public void updateProfessor() throws SQLException {
@@ -45,22 +57,31 @@ public class ProfessorController {
         findAllProfessores();
         System.out.println("\n- Atualização de professor");
         System.out.print("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
-        System.out.print("Nome completo: ");
-        String nomeCompleto = input.nextLine();
-        System.out.print("Data de nascimento: ");
-        LocalDate dataNascimento = LocalDate.parse(input.nextLine());
-        System.out.print("Email: ");
-        String email = input.nextLine();
+        Integer matriculaProfessor = Helpers.getIntInput(input);
 
-        Professor professor = new Professor();
-        professor.setMatriculaProfessor(matriculaProfessor);
-        professor.setNomeCompleto(nomeCompleto);
-        professor.setDataNascimento(dataNascimento);
-        professor.setEmail(email);
+        Professor professor = professorDAO.findById(matriculaProfessor);
+        if (professor != null) {
+            System.out.print("Nome completo: ");
+            String nomeCompleto = input.nextLine();
+            System.out.print("Data de nascimento: ");
+            LocalDate dataNascimento = Helpers.getLocalDateInput(input);
 
-        professorDAO.update(professor);
-        System.out.println("\nProfessor atualizado com sucesso!");
+            if (dataNascimento.isBefore(LocalDate.now())) {
+                System.out.print("Email: ");
+                String email = input.nextLine();
+
+                professor.setNomeCompleto(nomeCompleto);
+                professor.setDataNascimento(dataNascimento);
+                professor.setEmail(email);
+
+                professorDAO.update(professor);
+                System.out.println("\nProfessor atualizado com sucesso!");
+            } else {
+                System.out.println("\nInforme uma data de nascimento válida!");
+            }
+        } else {
+            System.out.println("\nProfessor não encontrado.");
+        }
     }
 
     public void deleteProfessor() throws SQLException {
@@ -68,25 +89,24 @@ public class ProfessorController {
         findAllProfessores();
         System.out.println("\n- Exclusão de professor");
         System.out.print("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
+        Integer matriculaProfessor = Helpers.getIntInput(input);
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("matricula_professor", matriculaProfessor);
-
-        professorDAO.delete(key);
-        System.out.println("\nProfessor excluído com sucesso!");
+        Professor professor = professorDAO.findById(matriculaProfessor);
+        if (professor != null) {
+            professorDAO.delete(matriculaProfessor);
+            System.out.println("\nProfessor excluído com sucesso!");
+        } else {
+            System.out.println("\nProfessor não encontrado.");
+        }
     }
 
     public void findProfessorById() throws SQLException {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Busca de professor");
         System.out.print("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
+        Integer matriculaProfessor = Helpers.getIntInput(input);
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("matricula_professor", matriculaProfessor);
-
-        Professor professor = professorDAO.findById(key);
+        Professor professor = professorDAO.findById(matriculaProfessor);
         if (professor != null) {
             System.out.println("\nProfessor encontrado:");
             System.out.println("Nome completo: " + professor.getNomeCompleto());

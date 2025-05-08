@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SalaDAO extends GenericDAO<Sala> {
+public class SalaDAO extends GenericDAO<Sala, String> {
     public SalaDAO(Connection connection) {
         super(connection);
     }
@@ -40,6 +40,7 @@ public class SalaDAO extends GenericDAO<Sala> {
     @Override
     protected Object[] getUpdateValues(Sala entity) {
         return new Object[] {
+                entity.getCodigoBloco(),
                 entity.getNomeSala(),
                 entity.getAndar(),
                 entity.getCapacidade()

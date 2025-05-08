@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlocoDAO extends GenericDAO<Bloco> {
+public class BlocoDAO extends GenericDAO<Bloco, String> {
     public BlocoDAO(Connection connection) {
         super(connection);
     }

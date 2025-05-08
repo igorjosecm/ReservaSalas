@@ -9,7 +9,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReservaDAO extends GenericDAO<Reserva> {
+public class ReservaDAO extends GenericDAO<Reserva, Integer> {
     public ReservaDAO(Connection connection) {
         super(connection);
     }
