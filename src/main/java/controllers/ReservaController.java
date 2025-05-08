@@ -4,11 +4,14 @@ import classes.CompositeKey;
 import classes.Reserva;
 import classes.Sala;
 import dao.ReservaDAO;
+import helpers.Helpers;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,30 +20,47 @@ public class ReservaController {
     private final ReservaDAO reservaDAO;
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     public ReservaController(Connection connection) {
         this.reservaDAO = new ReservaDAO(connection);
     }
 
     public void createReserva() throws SQLException {
-
-
         Scanner input = new Scanner(System.in);
         findAllReservas();
         System.out.println("\n- Reserva de sala");
         System.out.println("Código da sala: ");
-        String codigoSala = input.next();
-        System.out.print("Data início da reserva: ");
-        LocalDate dataInicio = LocalDate.parse(input.nextLine());
-        System.out.print("Data fim da reserva: ");
-        LocalDate dataFim= LocalDate.parse(input.nextLine());
-        System.out.print("Horário início da reserva: ");
-        LocalTime horaInicio = LocalTime.parse(input.nextLine(), formatter);
-        System.out.print("Horário fim da reserva: ");
-        LocalTime horaFim = LocalTime.parse(input.nextLine(), formatter);
+        String codigoSala = input.nextLine();
+
+        LocalDate dataInicio;
+        LocalDate dataFim;
+
+        while (true) {
+            try {
+                System.out.print("Data início da reserva (dd/mm/aaaa): ");
+                dataInicio = LocalDate.parse(input.nextLine(), formatter);
+
+                System.out.print("Data fim da reserva (dd/mm/aaaa): ");
+                dataFim = LocalDate.parse(input.nextLine(), formatter);
+
+                if (dataInicio.isAfter(dataFim)) {
+                    System.out.println("A data inicial não pode ser após a data final. Tente novamente.");
+                } else {
+                    break;
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato de data inválido. Use dd/mm/aaaa.");
+            }
+        }
+
+        System.out.print("Horário início da reserva (hh:mm): ");
+        LocalTime horaInicio = Helpers.getLocalTimeInput(input);
+        System.out.print("Horário fim da reserva (hh:mm): ");
+        LocalTime horaFim = Helpers.getLocalTimeInput(input);
         System.out.print("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
-        System.out.println("Código da materia: ");
+        Integer matriculaProfessor = Helpers.getIntInput(input);
+        System.out.print("Código da materia: ");
         String codMateria = input.nextLine();
 
         boolean conflito = reservaDAO.existeConflitoReserva(
@@ -75,18 +95,36 @@ public class ReservaController {
         findAllReservas();
         System.out.println("\n- Atualização de reserva de sala");
         System.out.print("Código da sala: ");
-        String codigoSala = input.next();
-        System.out.print("Data início da reserva: ");
-        LocalDate dataInicio = LocalDate.parse(input.nextLine());
-        System.out.print("Data fim da reserva: ");
-        LocalDate dataFim= LocalDate.parse(input.nextLine());
-        System.out.print("Horário início da reserva: ");
-        LocalTime horaInicio = LocalTime.parse(input.nextLine(), formatter);
-        System.out.print("Horário fim da reserva: ");
-        LocalTime horaFim = LocalTime.parse(input.nextLine(), formatter);
+        String codigoSala = input.nextLine();
+
+        LocalDate dataInicio;
+        LocalDate dataFim;
+
+        while (true) {
+            try {
+                System.out.print("Data início da reserva (dd/mm/aaaa): ");
+                dataInicio = LocalDate.parse(input.nextLine(), formatter);
+
+                System.out.print("Data fim da reserva (dd/mm/aaaa): ");
+                dataFim = LocalDate.parse(input.nextLine(), formatter);
+
+                if (dataInicio.isAfter(dataFim)) {
+                    System.out.println("A data inicial não pode ser após a data final. Tente novamente.");
+                } else {
+                    break;
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato de data inválido. Use dd/mm/aaaa.");
+            }
+        }
+
+        System.out.print("Horário início da reserva (hh:mm): ");
+        LocalTime horaInicio = Helpers.getLocalTimeInput(input);
+        System.out.print("Horário fim da reserva (hh:mm): ");
+        LocalTime horaFim = Helpers.getLocalTimeInput(input);
         System.out.print("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
-        System.out.println("Código da materia: ");
+        Integer matriculaProfessor = Helpers.getIntInput(input);
+        System.out.print("Código da materia: ");
         String codMateria = input.nextLine();
 
 
@@ -121,7 +159,7 @@ public class ReservaController {
         findAllReservas();
         System.out.println("\n- Exclusão de reserva");
         System.out.print("ID da reserva: ");
-        Integer idReserva = input.nextInt();
+        Integer idReserva = Helpers.getIntInput(input);
 
         reservaDAO.delete(idReserva);
         System.out.println("\nReserva excluída com sucesso!");
@@ -131,7 +169,7 @@ public class ReservaController {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Busca de reserva");
         System.out.print("ID da reserva: ");
-        Integer idReserva = input.nextInt();
+        Integer idReserva = Helpers.getIntInput(input);
 
         Reserva reserva = reservaDAO.findById(idReserva);
         if (reserva != null) {
@@ -164,14 +202,32 @@ public class ReservaController {
     public void findReservasByPeriodo() throws SQLException {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Buscar reservas por periodo");
-        System.out.print("Data início da reserva: ");
-        LocalDate dataInicio = LocalDate.parse(input.nextLine());
-        System.out.print("Data fim da reserva: ");
-        LocalDate dataFim= LocalDate.parse(input.nextLine());
-        System.out.print("Horário início da reserva: ");
-        LocalTime horaInicio = LocalTime.parse(input.nextLine(), formatter);
-        System.out.print("Horário fim da reserva: ");
-        LocalTime horaFim = LocalTime.parse(input.nextLine(), formatter);
+
+        LocalDate dataInicio;
+        LocalDate dataFim;
+
+        while (true) {
+            try {
+                System.out.print("Data início da reserva (dd/mm/aaaa): ");
+                dataInicio = LocalDate.parse(input.nextLine(), formatter);
+
+                System.out.print("Data fim da reserva (dd/mm/aaaa): ");
+                dataFim = LocalDate.parse(input.nextLine(), formatter);
+
+                if (dataInicio.isAfter(dataFim)) {
+                    System.out.println("A data inicial não pode ser após a data final. Tente novamente.");
+                } else {
+                    break;
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato de data inválido. Use dd/mm/aaaa.");
+            }
+        }
+
+        System.out.print("Horário início da reserva (hh:mm): ");
+        LocalTime horaInicio = Helpers.getLocalTimeInput(input);
+        System.out.print("Horário fim da reserva (hh:mm): ");
+        LocalTime horaFim = Helpers.getLocalTimeInput(input);
 
         List<Reserva> reservas = reservaDAO.findAllReservasByPeriodo(dataInicio ,dataFim ,horaInicio, horaFim);
 
@@ -206,9 +262,9 @@ public class ReservaController {
         System.out.println("Código da sala: " + reserva.getCodigoSala());
         System.out.println("Matrícula do professor: " + reserva.getMatriculaProfessor());
         System.out.println("Código da matéria: " + reserva.getCodigoMateria());
-        System.out.println("Data de início reserva: " + reserva.getDataInicio());
-        System.out.println("Data de fim reserva: " + reserva.getDataFim());
-        System.out.println("Horário de início reserva: " + reserva.getHoraInicio());
-        System.out.println("Horário de fim reserva: " + reserva.getHoraFim());
+        System.out.println("Data de início reserva: " + formatter.format(reserva.getDataInicio()));
+        System.out.println("Data de fim reserva: " + formatter.format(reserva.getDataFim()));
+        System.out.println("Horário de início reserva: " + timeFormatter.format(reserva.getHoraInicio()));
+        System.out.println("Horário de fim reserva: " + timeFormatter.format(reserva.getHoraFim()));
     }
 }

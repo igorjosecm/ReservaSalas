@@ -3,6 +3,7 @@ package controllers;
 import classes.CompositeKey;
 import classes.MateriaProfessor;
 import dao.MateriaProfessorDAO;
+import helpers.Helpers;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -34,7 +35,7 @@ public class MateriaProfessorController {
         String codigoMateria = input.nextLine();
         professorController.findAllProfessores();
         System.out.println("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
+        Integer matriculaProfessor = Helpers.getIntInput(input);
 
         LocalDate inicioPeriodo;
         LocalDate fimPeriodo;
@@ -86,7 +87,7 @@ public class MateriaProfessorController {
         String codigoMateria = input.nextLine();
         professorController.findAllProfessores();
         System.out.println("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
+        Integer matriculaProfessor = Helpers.getIntInput(input);
 
         CompositeKey compositeKey = new CompositeKey();
         compositeKey.addKey("codigo_materia", codigoMateria);
@@ -109,7 +110,7 @@ public class MateriaProfessorController {
         String codigoMateria = input.nextLine();
         professorController.findAllProfessores();
         System.out.println("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
+        Integer matriculaProfessor = Helpers.getIntInput(input);
 
         CompositeKey key = new CompositeKey();
         key.addKey("codigo_materia", codigoMateria);
@@ -127,7 +128,7 @@ public class MateriaProfessorController {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Buscar matérias relacionadas ao professor");
         System.out.print("Matrícula do professor: ");
-        Integer matriculaProfessor = input.nextInt();
+        Integer matriculaProfessor = Helpers.getIntInput(input);
 
         List<MateriaProfessor> materiaProfessors = materiaProfessorDAO.findAllMateriasOfProfessor(matriculaProfessor);
 
@@ -160,7 +161,7 @@ public class MateriaProfessorController {
     private void printInfoMateriaProfessor(MateriaProfessor materiaProfessor) {
         System.out.println("Código da materia: " + materiaProfessor.getCodigoMateria());
         System.out.println("Matrícula do professor: " + materiaProfessor.getMatriculaProfessor());
-        System.out.println("Início período: " + materiaProfessor.getInicioPeriodo());
-        System.out.println("Fim período: " + materiaProfessor.getFimPeriodo());
+        System.out.println("Início período: " + formatter.format(materiaProfessor.getInicioPeriodo()));
+        System.out.println("Fim período: " + formatter.format(materiaProfessor.getFimPeriodo()));
     }
 }

@@ -41,7 +41,7 @@ public class Helpers {
     }
 
     public static LocalTime getLocalTimeInput(Scanner input) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         while (true) {
             try {
                 String localDateInput = input.nextLine();

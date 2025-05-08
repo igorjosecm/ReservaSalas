@@ -1,6 +1,5 @@
 package controllers;
 
-import classes.CompositeKey;
 import classes.Professor;
 import dao.ProfessorDAO;
 import helpers.Helpers;
@@ -8,11 +7,13 @@ import helpers.Helpers;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 
 public class ProfessorController {
     private final ProfessorDAO professorDAO;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public ProfessorController(Connection connection) {
         this.professorDAO = new ProfessorDAO(connection);
@@ -110,7 +111,7 @@ public class ProfessorController {
         if (professor != null) {
             System.out.println("\nProfessor encontrado:");
             System.out.println("Nome completo: " + professor.getNomeCompleto());
-            System.out.println("Data nascimento: " + professor.getDataNascimento());
+            System.out.println("Data nascimento: " + formatter.format(professor.getDataNascimento()));
             System.out.println("Email: " + professor.getEmail());
         } else {
             System.out.println("\nProfessor não encontrado.");
