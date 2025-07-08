@@ -1,23 +1,22 @@
 package controllers;
 
 import classes.Bloco;
+import classes.Sala;
 import dao.BlocoDAO;
 import dao.SalaDAO;
-import classes.Sala;
 import helpers.Helpers;
+import org.neo4j.driver.Driver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Scanner;
 
 public class SalaController {
     private final SalaDAO salaDAO;
     private final BlocoDAO blocoDAO;
 
-    public SalaController(Connection connection) {
-        this.salaDAO = new SalaDAO(connection);
-        this.blocoDAO = new BlocoDAO(connection);
+    public SalaController(Driver driver) {
+        this.salaDAO = new SalaDAO(driver);
+        this.blocoDAO = new BlocoDAO(driver);
     }
 
     public void createSala() throws SQLException {
@@ -28,7 +27,7 @@ public class SalaController {
 
         Sala sala = salaDAO.findById(codigoSala);
         if (sala == null) {
-            System.out.print("Código do bloco: ");
+            System.out.print("Código do bloco onde a sala se localiza: ");
             String codigoBloco = input.nextLine();
 
             Bloco bloco = blocoDAO.findById(codigoBloco);
@@ -44,12 +43,13 @@ public class SalaController {
 
                     Sala newSala = new Sala();
                     newSala.setCodigoSala(codigoSala);
-                    newSala.setCodigoBloco(codigoBloco);
                     newSala.setNomeSala(nomeSala);
                     newSala.setAndar(andar);
                     newSala.setCapacidade(capacidade);
 
-                    salaDAO.create(newSala);
+                    salaDAO.create(newSala); // 1. Cria o nó
+                    // salaDAO.linkToBloco(codigoSala, codigoBloco); // TODO: 2. Cria o relacionamento (Lógica a ser adicionada no DAO)
+
                     System.out.println("\nSala criada com sucesso!");
                 } else {
                     System.out.println("\nAtenção! O bloco " + codigoBloco + " possui " + bloco.getNumAndares() +

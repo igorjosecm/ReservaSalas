@@ -1,188 +1,104 @@
 package dao;
 
-import classes.CompositeKey;
 import classes.Reserva;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Values;
+import org.neo4j.driver.types.Node;
 
-import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ReservaDAO extends GenericDAO<Reserva, Integer> {
-    public ReservaDAO(Connection connection) {
-        super(connection);
+
+    public ReservaDAO(Driver driver) {
+        super(driver);
     }
 
+    // Sobrescrevemos o método create para lidar com os relacionamentos
     @Override
-    protected Reserva fromResultSet(ResultSet rs) throws SQLException {
+    public void create(Reserva entity) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                // 1. Cria o nó da Reserva
+                String createNodeCypher = String.format("CREATE (n:%s $props)", getLabel());
+                tx.run(createNodeCypher, Values.parameters("props", toMap(entity)));
+
+                // 2. Cria os relacionamentos
+                String linkSalaCypher = "MATCH (r:Reserva {id_reserva: $id}), (s:Sala {codigo_sala: $codigo}) CREATE (r)-[:FEITA_PARA]->(s)";
+                tx.run(linkSalaCypher, Values.parameters("id", entity.getIdReserva(), "codigo", entity.getCodigoSala()));
+
+                String linkProfessorCypher = "MATCH (r:Reserva {id_reserva: $id}), (p:Professor {matricula_professor: $matricula}) CREATE (r)-[:REALIZADA_POR]->(p)";
+                tx.run(linkProfessorCypher, Values.parameters("id", entity.getIdReserva(), "matricula", entity.getMatriculaProfessor()));
+
+                String linkMateriaCypher = "MATCH (r:Reserva {id_reserva: $id}), (m:Materia {codigo_materia: $codigo}) CREATE (r)-[:REFERENTE_A]->(m)";
+                tx.run(linkMateriaCypher, Values.parameters("id", entity.getIdReserva(), "codigo", entity.getCodigoMateria()));
+            });
+        }
+    }
+
+    public boolean existeConflitoReserva(String codigoSala, LocalDate dataInicio, LocalDate dataFim,
+                                         LocalTime horaInicio, LocalTime horaFim) {
+        try (Session session = driver.session()) {
+            return session.executeRead(tx -> {
+                // A query busca por uma reserva na mesma sala que tenha sobreposição de data e hora.
+                String cypher = "MATCH (s:Sala {codigo_sala: $codigoSala})<-[:FEITA_PARA]-(r:Reserva) " +
+                        "WHERE (r.data_inicio <= $dataFim AND r.data_fim >= $dataInicio) AND " +
+                        "(r.hora_inicio < $horaFim AND r.hora_fim > $horaInicio) " +
+                        "RETURN count(r) > 0 AS conflito";
+
+                Result result = tx.run(cypher, Values.parameters(
+                        "codigoSala", codigoSala,
+                        "dataInicio", dataInicio,
+                        "dataFim", dataFim,
+                        "horaInicio", horaInicio,
+                        "horaFim", horaFim
+                ));
+
+                return result.single().get("conflito").asBoolean();
+            });
+        }
+    }
+
+
+    @Override
+    protected Reserva fromNode(Node node) {
         Reserva reserva = new Reserva();
-        reserva.setIdReserva(rs.getInt("id_reserva"));
-        reserva.setCodigoSala(rs.getString("codigo_sala"));
-        reserva.setMatriculaProfessor(rs.getInt("matricula_professor"));
-        reserva.setCodigoMateria(rs.getString("codigo_materia"));
-        reserva.setDataInicio(rs.getDate("data_inicio").toLocalDate());
-        reserva.setDataFim(rs.getDate("data_fim").toLocalDate());
-        reserva.setHoraInicio(rs.getTime("hora_inicio").toLocalTime());
-        reserva.setHoraFim(rs.getTime("hora_fim").toLocalTime());
+        reserva.setIdReserva(node.get("id_reserva").asInt());
+        reserva.setDataInicio(node.get("data_inicio").asLocalDate());
+        reserva.setDataFim(node.get("data_fim").asLocalDate());
+        reserva.setHoraInicio(node.get("hora_inicio").asLocalTime());
+        reserva.setHoraFim(node.get("hora_fim").asLocalTime());
+        // As outras propriedades (codigo_sala, etc.) agora são obtidas via relacionamentos.
         return reserva;
     }
 
     @Override
-    protected Object[] getInsertValues(Reserva entity) {
-        return new Object[] {
-                entity.getCodigoSala(),
-                entity.getMatriculaProfessor(),
-                entity.getCodigoMateria(),
-                entity.getDataInicio(),
-                entity.getDataFim(),
-                entity.getHoraInicio(),
-                entity.getHoraFim(),
-        };
+    protected Map<String, Object> toMap(Reserva entity) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id_reserva", entity.getIdReserva());
+        map.put("data_inicio", entity.getDataInicio());
+        map.put("data_fim", entity.getDataFim());
+        map.put("hora_inicio", entity.getHoraInicio());
+        map.put("hora_fim", entity.getHoraFim());
+        return map;
     }
 
     @Override
-    protected Object[] getUpdateValues(Reserva entity) {
-        return new Object[] {
-                entity.getDataInicio(),
-                entity.getDataFim(),
-                entity.getHoraInicio(),
-                entity.getHoraFim(),
-        };
+    protected String getLabel() {
+        return "Reserva";
     }
 
     @Override
-    protected String getAlias() {
-        return "reserva_salas";
-    }
-
-    @Override
-    protected List<String> getIdColumns() {
-        List<String> idColumns = new ArrayList<>();
-        idColumns.add("id_reserva");
-        return idColumns;
-    }
-
-    @Override
-    protected List<String> getColumns() {
-        List<String> columns = new ArrayList<>();
-        columns.add("codigo_sala");
-        columns.add("matricula_professor");
-        columns.add("codigo_materia");
-        columns.add("data_inicio");
-        columns.add("data_fim");
-        columns.add("hora_inicio");
-        columns.add("hora_fim");
-        return columns;
-    }
-
-    @Override
-    protected String getTableName() {
-        return "reserva";
-    }
-
-    @Override
-    protected CompositeKey getIdValues(Reserva entity) {
-        CompositeKey key = new CompositeKey();
-        key.addKey("id_reserva", entity.getIdReserva());
-        return key;
-    }
-
-    @Override
-    protected String getGeneratedKey() {
+    protected String getIdProperty() {
         return "id_reserva";
     }
 
     @Override
-    protected void setGeneratedId(Reserva entity, ResultSet generatedKeys) throws SQLException {
-        entity.setIdReserva(generatedKeys.getInt("id_reserva"));
-    }
-
-    public boolean existeConflitoReserva(String codigoSala, LocalDate dataInicio, LocalDate dataFim,
-                                         LocalTime horaInicio, LocalTime horaFim) throws SQLException  {
-        String tableName = getAlias() + "." + getTableName();
-
-        boolean existeConflitoReserva = false;
-
-        String sql = " SELECT 1 FROM " + tableName + " WHERE codigo_sala = ? AND data_inicio <= ? AND data_fim >= ? AND hora_inicio < ? AND hora_fim > ? LIMIT 1 ";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, codigoSala);
-            stmt.setDate(2, Date.valueOf(dataInicio));
-            stmt.setDate(3, Date.valueOf(dataFim));
-            stmt.setTime(4, Time.valueOf(horaInicio));
-            stmt.setTime(5, Time.valueOf(horaFim));
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()){
-                    existeConflitoReserva = true;
-                }
-            }
-        }
-        return existeConflitoReserva;
-    }
-
-    public List<Reserva> findAllReservasByPeriodo(LocalDate dataInicio, LocalDate dataFim,
-                                         LocalTime horaInicio, LocalTime horaFim) throws SQLException  {
-        String tableName = getAlias() + "." + getTableName();
-
-        List<Reserva> reservas = new ArrayList<>();
-
-        String sql = " SELECT * FROM " + tableName + " WHERE id_reserva > 0 ";
-        if (dataInicio != null) {
-            sql += " AND data_inicio > ?1 ";
-        }
-        if (dataFim != null) {
-            sql += " AND data_fim < ?2 ";
-        }
-        if (horaInicio != null) {
-            sql += " AND hora_inicio => ?3 ";
-        }
-        if (horaFim != null) {
-            sql += " AND hora_fim <= ?4 ";
-        }
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            if (dataInicio != null) {
-                stmt.setDate(1, Date.valueOf(dataInicio.minusDays(1)));
-            }
-            if (dataFim != null) {
-                stmt.setDate(2, Date.valueOf(dataFim.plusDays(1)));
-            }
-            if (horaInicio != null) {
-                stmt.setTime(3, Time.valueOf(horaInicio));
-            }
-            if (horaFim != null) {
-                stmt.setTime(4, Time.valueOf(horaFim));
-            }
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()){
-                    reservas.add(fromResultSet(rs));
-                }
-            }
-        }
-        return reservas;
-    }
-
-    public List<Reserva> findAllReservasByBloco(String codigoBloco) throws SQLException  {
-        List<Reserva> reservas = new ArrayList<>();
-
-        String sql =
-                " SELECT reserva.id_reserva, reserva.codigo_sala, reserva.matricula_professor, reserva.codigo_materia," +
-                        " reserva.data_inicio, reserva.data_fim, reserva.hora_inicio, reserva.hora_fim" +
-                        " FROM reserva_salas.reserva join reserva_salas.sala" +
-                        " on (sala.codigo_sala = " + getTableName() + ".codigo_sala) WHERE sala.codigo_bloco = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, codigoBloco);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()){
-                    reservas.add(fromResultSet(rs));
-                }
-            }
-        }
-        return reservas;
+    protected Integer getIdValue(Reserva entity) {
+        return entity.getIdReserva();
     }
 }

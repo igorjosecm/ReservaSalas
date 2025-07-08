@@ -1,12 +1,10 @@
 package controllers;
 
-import classes.CompositeKey;
-import classes.Reserva;
-import classes.Sala;
-import dao.ReservaDAO;
 import helpers.Helpers;
+import classes.Reserva;
+import dao.ReservaDAO;
+import org.neo4j.driver.Driver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,8 +20,8 @@ public class ReservaController {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
-    public ReservaController(Connection connection) {
-        this.reservaDAO = new ReservaDAO(connection);
+    public ReservaController(Driver driver) {
+        this.reservaDAO = new ReservaDAO(driver);
     }
 
     public void createReserva() throws SQLException {

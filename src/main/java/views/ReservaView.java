@@ -1,18 +1,16 @@
 package views;
 
-import classes.Reserva;
-import controllers.ReservaController;
-import controllers.SalaController;
 import helpers.Helpers;
+import controllers.ReservaController;
+import org.neo4j.driver.Driver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ReservaView {
 
-    public static void menuReserva(Connection con, Scanner input) throws SQLException {
-        ReservaController reservaController = new ReservaController(con);
+    public static void menuReserva(Driver driver, Scanner input) throws SQLException {
+        ReservaController reservaController = new ReservaController(driver);
 
         boolean rodando = true;
         while (rodando) {

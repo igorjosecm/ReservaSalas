@@ -1,15 +1,15 @@
 package views;
 
-import controllers.SalaController;
 import helpers.Helpers;
+import org.neo4j.driver.Driver;
+import controllers.SalaController;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class SalaView {
-    public static void menuSala(Connection con, Scanner input) throws SQLException {
-        SalaController salaController = new SalaController(con);
+    public static void menuSala(Driver driver, Scanner input) throws SQLException {
+        SalaController salaController = new SalaController(driver);
 
         boolean rodando = true;
         while (rodando) {

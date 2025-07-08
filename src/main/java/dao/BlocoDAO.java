@@ -1,82 +1,48 @@
 package dao;
 
 import classes.Bloco;
-import classes.CompositeKey;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.types.Node;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BlocoDAO extends GenericDAO<Bloco, String> {
-    public BlocoDAO(Connection connection) {
-        super(connection);
+
+    public BlocoDAO(Driver driver) {
+        super(driver);
     }
 
     @Override
-    protected Bloco fromResultSet(ResultSet rs) throws SQLException {
+    protected Bloco fromNode(Node node) {
         Bloco bloco = new Bloco();
-        bloco.setCodigoBloco(rs.getString("codigo_bloco"));
-        bloco.setNomeBloco(rs.getString("nome_bloco"));
-        bloco.setNumAndares(rs.getInt("num_andares"));
+        bloco.setCodigoBloco(node.get("codigo_bloco").asString());
+        bloco.setNomeBloco(node.get("nome_bloco").asString());
+        bloco.setNumAndares(node.get("num_andares").asInt());
         return bloco;
     }
 
     @Override
-    protected Object[] getInsertValues(Bloco entity) {
-        return new Object[] {
-                entity.getCodigoBloco(),
-                entity.getNomeBloco(),
-                entity.getNumAndares(),
-        };
+    protected Map<String, Object> toMap(Bloco entity) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("codigo_bloco", entity.getCodigoBloco());
+        map.put("nome_bloco", entity.getNomeBloco());
+        map.put("num_andares", entity.getNumAndares());
+        return map;
     }
 
     @Override
-    protected Object[] getUpdateValues(Bloco entity) {
-        return new Object[] {
-                entity.getNomeBloco(),
-                entity.getNumAndares(),
-        };
+    protected String getLabel() {
+        return "Bloco";
     }
 
     @Override
-    protected String getAlias() {
-        return "reserva_salas";
+    protected String getIdProperty() {
+        return "codigo_bloco";
     }
 
     @Override
-    protected List<String> getIdColumns() {
-        List<String> idColumns = new ArrayList<>();
-        idColumns.add("codigo_bloco");
-        return idColumns;
+    protected String getIdValue(Bloco entity) {
+        return entity.getCodigoBloco();
     }
-
-    @Override
-    protected List<String> getColumns() {
-        List<String> columns = new ArrayList<>();
-        columns.add("nome_bloco");
-        columns.add("num_andares");
-        return columns;
-    }
-
-    @Override
-    protected String getTableName() {
-        return "bloco";
-    }
-
-    @Override
-    protected CompositeKey getIdValues(Bloco entity) {
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_bloco", entity.getCodigoBloco());
-        return key;
-    }
-
-    @Override
-    protected String getGeneratedKey() {
-        return null;
-    }
-
-    @Override
-    protected void setGeneratedId(Bloco entity, ResultSet generatedKeys) throws SQLException {}
 }

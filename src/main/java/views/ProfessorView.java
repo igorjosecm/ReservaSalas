@@ -1,16 +1,15 @@
 package views;
 
-import controllers.ProfessorController;
-import controllers.SalaController;
 import helpers.Helpers;
+import org.neo4j.driver.Driver;
+import controllers.ProfessorController;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ProfessorView {
-    public static void menuProfessor(Connection con, Scanner input) throws SQLException {
-        ProfessorController professorController = new ProfessorController(con);
+    public static void menuProfessor(Driver driver, Scanner input) throws SQLException {
+        ProfessorController professorController = new ProfessorController(driver);
 
         boolean rodando = true;
         while (rodando) {

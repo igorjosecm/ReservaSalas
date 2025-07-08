@@ -1,18 +1,18 @@
 package views;
 
+import helpers.Helpers;
 import controllers.MateriaController;
 import controllers.MateriaProfessorController;
-import helpers.Helpers;
+import org.neo4j.driver.Driver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class MateriaView {
 
-    public static void menuMateria(Connection con, Scanner input) throws SQLException {
-        MateriaController materiaController = new MateriaController(con);
-        MateriaProfessorController materiaProfessorController = new MateriaProfessorController(con);
+    public static void menuMateria(Driver driver, Scanner input) throws SQLException {
+        MateriaController materiaController = new MateriaController(driver);
+        MateriaProfessorController materiaProfessorController = new MateriaProfessorController(driver);
 
         boolean rodando = true;
         while (rodando) {

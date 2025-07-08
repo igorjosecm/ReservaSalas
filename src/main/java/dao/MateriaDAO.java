@@ -1,82 +1,48 @@
 package dao;
 
-import classes.CompositeKey;
 import classes.Materia;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.types.Node;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MateriaDAO extends GenericDAO<Materia, String> {
-    public MateriaDAO(Connection connection) {
-        super(connection);
+
+    public MateriaDAO(Driver driver) {
+        super(driver);
     }
 
     @Override
-    protected Materia fromResultSet(ResultSet rs) throws SQLException {
+    protected Materia fromNode(Node node) {
         Materia materia = new Materia();
-        materia.setCodigoMateria(rs.getString("codigo_materia"));
-        materia.setNomeMateria(rs.getString("nome_materia"));
-        materia.setCargaHoraria(rs.getInt("carga_horaria"));
+        materia.setCodigoMateria(node.get("codigo_materia").asString());
+        materia.setNomeMateria(node.get("nome_materia").asString());
+        materia.setCargaHoraria(node.get("carga_horaria").asInt());
         return materia;
     }
 
     @Override
-    protected Object[] getInsertValues(Materia entity) {
-        return new Object[] {
-                entity.getCodigoMateria(),
-                entity.getNomeMateria(),
-                entity.getCargaHoraria(),
-        };
+    protected Map<String, Object> toMap(Materia entity) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("codigo_materia", entity.getCodigoMateria());
+        map.put("nome_materia", entity.getNomeMateria());
+        map.put("carga_horaria", entity.getCargaHoraria());
+        return map;
     }
 
     @Override
-    protected Object[] getUpdateValues(Materia entity) {
-        return new Object[] {
-                entity.getNomeMateria(),
-                entity.getCargaHoraria(),
-        };
+    protected String getLabel() {
+        return "Materia";
     }
 
     @Override
-    protected String getAlias() {
-        return "reserva_salas";
+    protected String getIdProperty() {
+        return "codigo_materia";
     }
 
     @Override
-    protected List<String> getIdColumns() {
-        List<String> idColumns = new ArrayList<>();
-        idColumns.add("codigo_materia");
-        return idColumns;
+    protected String getIdValue(Materia entity) {
+        return entity.getCodigoMateria();
     }
-
-    @Override
-    protected List<String> getColumns() {
-        List<String> columns = new ArrayList<>();
-        columns.add("nome_materia");
-        columns.add("carga_horaria");
-        return columns;
-    }
-
-    @Override
-    protected String getTableName() {
-        return "materia";
-    }
-
-    @Override
-    protected CompositeKey getIdValues(Materia entity) {
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_materia", entity.getCodigoMateria());
-        return key;
-    }
-
-    @Override
-    protected String getGeneratedKey() {
-        return null;
-    }
-
-    @Override
-    protected void setGeneratedId(Materia entity, ResultSet generatedKeys) throws SQLException {}
 }

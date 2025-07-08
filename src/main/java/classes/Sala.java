@@ -2,14 +2,12 @@ package classes;
 
 public class Sala {
     String codigoSala;
-    String codigoBloco;
     String nomeSala;
     int andar;
     int capacidade;
 
     public Sala() {
         this.setCodigoSala("");
-        this.setCodigoBloco("");
         this.setNomeSala("");
         this.setAndar(0);
         this.setCapacidade(0);
@@ -21,14 +19,6 @@ public class Sala {
 
     public void setCodigoSala(String codigoSala) {
         this.codigoSala = codigoSala;
-    }
-
-    public String getCodigoBloco() {
-        return codigoBloco;
-    }
-
-    public void setCodigoBloco(String codigoBloco) {
-        this.codigoBloco = codigoBloco;
     }
 
     public String getNomeSala() {

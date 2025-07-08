@@ -1,109 +1,77 @@
 package dao;
 
-import classes.CompositeKey;
 import classes.Sala;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Values;
+import org.neo4j.driver.types.Node;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SalaDAO extends GenericDAO<Sala, String> {
-    public SalaDAO(Connection connection) {
-        super(connection);
+
+    public SalaDAO(Driver driver) {
+        super(driver);
     }
 
     @Override
-    protected Sala fromResultSet(ResultSet rs) throws SQLException {
+    protected Sala fromNode(Node node) {
         Sala sala = new Sala();
-        sala.setCodigoSala(rs.getString("codigo_sala"));
-        sala.setCodigoBloco(rs.getString("codigo_bloco"));
-        sala.setNomeSala(rs.getString("nome_sala"));
-        sala.setAndar(rs.getInt("andar"));
-        sala.setCapacidade(rs.getInt("capacidade"));
+        // A propriedade codigo_bloco não existe mais no nó Sala
+        // sala.setCodigoBloco(...);
+        sala.setCodigoSala(node.get("codigo_sala").asString());
+        sala.setNomeSala(node.get("nome_sala").asString());
+        sala.setAndar(node.get("andar").asInt());
+        sala.setCapacidade(node.get("capacidade").asInt());
         return sala;
     }
 
     @Override
-    protected Object[] getInsertValues(Sala entity) {
-        return new Object[] {
-                entity.getCodigoSala(),
-                entity.getCodigoBloco(),
-                entity.getNomeSala(),
-                entity.getAndar(),
-                entity.getCapacidade()
-        };
+    protected Map<String, Object> toMap(Sala entity) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("codigo_sala", entity.getCodigoSala());
+        map.put("nome_sala", entity.getNomeSala());
+        map.put("andar", entity.getAndar());
+        map.put("capacidade", entity.getCapacidade());
+        return map;
     }
 
     @Override
-    protected Object[] getUpdateValues(Sala entity) {
-        return new Object[] {
-                entity.getCodigoBloco(),
-                entity.getNomeSala(),
-                entity.getAndar(),
-                entity.getCapacidade()
-        };
+    protected String getLabel() {
+        return "Sala";
     }
 
     @Override
-    protected String getAlias() {
-        return "reserva_salas";
+    protected String getIdProperty() {
+        return "codigo_sala";
     }
 
     @Override
-    protected List<String> getIdColumns() {
-        List<String> idColumns = new ArrayList<>();
-        idColumns.add("codigo_sala");
-        return idColumns;
+    protected String getIdValue(Sala entity) {
+        return entity.getCodigoSala();
     }
 
-    @Override
-    protected List<String> getColumns() {
-        List<String> columns = new ArrayList<>();
-        columns.add("codigo_bloco");
-        columns.add("nome_sala");
-        columns.add("andar");
-        columns.add("capacidade");
-        return columns;
-    }
-
-    @Override
-    protected String getTableName() {
-        return "sala";
-    }
-
-    @Override
-    protected CompositeKey getIdValues(Sala entity) {
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_sala", entity.getCodigoSala());
-        return key;
-    }
-
-    @Override
-    protected String getGeneratedKey() {
-        return null;
-    }
-
-    @Override
-    protected void setGeneratedId(Sala entity, ResultSet generatedKeys) throws SQLException {}
-
-    public List<Sala> findSalasByBloco(String codigoBloco) throws SQLException  {
-        String tableName = getAlias() + "." + getTableName();
-        List<Sala> salas = new ArrayList<>();
-
-        String sql = "SELECT * FROM " + tableName + " WHERE codigo_bloco = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, codigoBloco);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    salas.add(fromResultSet(rs));
+    /**
+     * Encontra todas as salas que pertencem a um bloco específico.
+     * @param codigoBloco O código do bloco a ser pesquisado.
+     * @return Uma lista de salas.
+     */
+    public List<Sala> findSalasByBloco(String codigoBloco) {
+        try (Session session = driver.session()) {
+            return session.executeRead(tx -> {
+                // A query agora navega pelo relacionamento :LOCALIZADA_EM
+                String cypher = "MATCH (s:Sala)-[:LOCALIZADA_EM]->(b:Bloco {codigo_bloco: $codigoBloco}) RETURN s";
+                Result result = tx.run(cypher, Values.parameters("codigoBloco", codigoBloco));
+                List<Sala> salas = new ArrayList<>();
+                while (result.hasNext()) {
+                    salas.add(fromNode(result.next().get("s").asNode()));
                 }
-            }
+                return salas;
+            });
         }
-        return salas;
     }
 }

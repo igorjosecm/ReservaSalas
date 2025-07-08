@@ -1,107 +1,56 @@
 package dao;
 
-import classes.CompositeKey;
-import classes.MateriaProfessor;
-import classes.Professor;
-import classes.Sala;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Values;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 
-public class MateriaProfessorDAO extends GenericDAO<MateriaProfessor, CompositeKey> {
-    public MateriaProfessorDAO(Connection connection) {
-        super(connection);
+public class MateriaProfessorDAO {
+
+    private final Driver driver;
+
+    public MateriaProfessorDAO(Driver driver) {
+        this.driver = driver;
     }
 
-    @Override
-    protected MateriaProfessor fromResultSet(ResultSet rs) throws SQLException {
-        MateriaProfessor materiaProfessor = new MateriaProfessor();
-        materiaProfessor.setCodigoMateria(rs.getString("codigo_materia"));
-        materiaProfessor.setMatriculaProfessor(rs.getInt("matricula_professor"));
-        materiaProfessor.setInicioPeriodo(rs.getDate("inicio_periodo").toLocalDate());
-        materiaProfessor.setFimPeriodo(rs.getDate("fim_periodo").toLocalDate());
-        return materiaProfessor;
-    }
-
-    @Override
-    protected Object[] getInsertValues(MateriaProfessor entity) {
-        return new Object[] {
-                entity.getCodigoMateria(),
-                entity.getMatriculaProfessor(),
-                entity.getInicioPeriodo(),
-                entity.getFimPeriodo(),
-        };
-    }
-
-    @Override
-    protected Object[] getUpdateValues(MateriaProfessor entity) {
-        return new Object[] {
-                entity.getInicioPeriodo(),
-                entity.getFimPeriodo(),
-        };
-    }
-
-    @Override
-    protected String getAlias() {
-        return "reserva_salas";
-    }
-
-    @Override
-    protected List<String> getIdColumns() {
-        List<String> idColumns = new ArrayList<>();
-        idColumns.add("codigo_materia");
-        idColumns.add("matricula_professor");
-        return idColumns;
-    }
-
-    @Override
-    protected List<String> getColumns() {
-        List<String> columns = new ArrayList<>();
-        columns.add("inicio_periodo");
-        columns.add("fim_periodo");
-        return columns;
-    }
-
-    @Override
-    protected String getTableName() {
-        return "materia_professor";
-    }
-
-    @Override
-    protected CompositeKey getIdValues(MateriaProfessor entity) {
-        CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("codigo_materia", entity.getCodigoMateria());
-        compositeKey.addKey("matricula_professor", entity.getMatriculaProfessor());
-        return compositeKey;
-    }
-
-    @Override
-    protected void setGeneratedId(MateriaProfessor entity, ResultSet generatedKeys) throws SQLException {}
-
-    @Override
-    protected String getGeneratedKey() {
-        return null;
-    }
-
-    public List<MateriaProfessor> findAllMateriasOfProfessor(Integer matriculaProfessor) throws SQLException  {
-        String tableName = getAlias() + "." + getTableName();
-        List<MateriaProfessor> materiasProfessor = new ArrayList<>();
-
-        String sql = "SELECT * FROM " + tableName + " WHERE matricula_professor = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, matriculaProfessor);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    materiasProfessor.add(fromResultSet(rs));
-                }
-            }
+    /**
+     * Cria o relacionamento :LECIONA entre um Professor e uma Matéria.
+     * @param matriculaProfessor Matrícula do professor.
+     * @param codigoMateria Código da matéria.
+     * @param inicioPeriodo Data de início do período.
+     * @param fimPeriodo Data de fim do período.
+     */
+    public void createLecionaRelationship(Integer matriculaProfessor, String codigoMateria, LocalDate inicioPeriodo, LocalDate fimPeriodo) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                String cypher = "MATCH (p:Professor {matricula_professor: $matricula}), (m:Materia {codigo_materia: $codigo}) " +
+                        "CREATE (p)-[r:LECIONA]->(m) " +
+                        "SET r.inicio_periodo = $inicio, r.fim_periodo = $fim";
+                tx.run(cypher, Values.parameters(
+                        "matricula", matriculaProfessor,
+                        "codigo", codigoMateria,
+                        "inicio", inicioPeriodo,
+                        "fim", fimPeriodo
+                ));
+            });
         }
-        return materiasProfessor;
+    }
+
+    /**
+     * Remove o relacionamento :LECIONA entre um Professor e uma Matéria.
+     * @param matriculaProfessor Matrícula do professor.
+     * @param codigoMateria Código da matéria.
+     */
+    public void deleteLecionaRelationship(Integer matriculaProfessor, String codigoMateria) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                String cypher = "MATCH (p:Professor {matricula_professor: $matricula})-[r:LECIONA]->(m:Materia {codigo_materia: $codigo}) DELETE r";
+                tx.run(cypher, Values.parameters(
+                        "matricula", matriculaProfessor,
+                        "codigo", codigoMateria
+                ));
+            });
+        }
     }
 }

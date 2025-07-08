@@ -1,86 +1,52 @@
 package dao;
 
-import classes.CompositeKey;
 import classes.Professor;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.types.Node;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProfessorDAO extends GenericDAO<Professor, Integer> {
-    public ProfessorDAO(Connection connection) {
-        super(connection);
+
+    public ProfessorDAO(Driver driver) {
+        super(driver);
     }
 
     @Override
-    protected Professor fromResultSet(ResultSet rs) throws SQLException {
+    protected Professor fromNode(Node node) {
         Professor professor = new Professor();
-        professor.setMatriculaProfessor(rs.getInt("matricula_professor"));
-        professor.setNomeCompleto(rs.getString("nome_completo"));
-        professor.setDataNascimento(rs.getDate("data_nascimento").toLocalDate());
-        professor.setEmail(rs.getString("email"));
+        professor.setMatriculaProfessor(node.get("matricula_professor").asInt());
+        professor.setNomeCompleto(node.get("nome_completo").asString());
+        professor.setEmail(node.get("email").asString());
+        if (node.containsKey("data_nascimento")) {
+            professor.setDataNascimento(node.get("data_nascimento").asLocalDate());
+        }
         return professor;
     }
 
     @Override
-    protected Object[] getInsertValues(Professor entity) {
-        return new Object[] {
-                entity.getMatriculaProfessor(),
-                entity.getNomeCompleto(),
-                entity.getDataNascimento(),
-                entity.getEmail(),
-        };
+    protected Map<String, Object> toMap(Professor entity) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("matricula_professor", entity.getMatriculaProfessor());
+        map.put("nome_completo", entity.getNomeCompleto());
+        map.put("email", entity.getEmail());
+        map.put("data_nascimento", entity.getDataNascimento());
+        return map;
     }
 
     @Override
-    protected Object[] getUpdateValues(Professor entity) {
-        return new Object[] {
-                entity.getNomeCompleto(),
-                entity.getDataNascimento(),
-                entity.getEmail(),
-        };
+    protected String getLabel() {
+        return "Professor";
     }
 
     @Override
-    protected String getAlias() {
-        return "reserva_salas";
+    protected String getIdProperty() {
+        return "matricula_professor";
     }
 
     @Override
-    protected List<String> getIdColumns() {
-        List<String> idColumns = new ArrayList<>();
-        idColumns.add("matricula_professor");
-        return idColumns;
+    protected Integer getIdValue(Professor entity) {
+        return entity.getMatriculaProfessor();
     }
-
-    @Override
-    protected List<String> getColumns() {
-        List<String> columns = new ArrayList<>();
-        columns.add("nome_completo");
-        columns.add("data_nascimento");
-        columns.add("email");
-        return columns;
-    }
-
-    @Override
-    protected String getTableName() {
-        return "professor";
-    }
-
-    @Override
-    protected CompositeKey getIdValues(Professor entity) {
-        CompositeKey key = new CompositeKey();
-        key.addKey("matricula_professor", entity.getMatriculaProfessor());
-        return key;
-    }
-
-    @Override
-    protected String getGeneratedKey() {
-        return null;
-    }
-
-    @Override
-    protected void setGeneratedId(Professor entity, ResultSet generatedKeys) throws SQLException {}
 }

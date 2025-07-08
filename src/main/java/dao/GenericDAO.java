@@ -1,175 +1,121 @@
 package dao;
 
-import classes.CompositeKey;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Values;
+import org.neo4j.driver.types.Node;
 
-import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+/**
+ * DAO genérico para operações CRUD em nós no Neo4j.
+ * @param <T> O tipo da entidade (ex: Bloco, Sala).
+ * @param <K> O tipo do identificador de negócio (ex: String para codigo_bloco, Integer para matricula_professor).
+ */
 public abstract class GenericDAO<T, K> {
-    protected Connection connection;
 
-    public GenericDAO(Connection connection) {
-        this.connection = connection;
+    protected final Driver driver;
+
+    public GenericDAO(Driver driver) {
+        this.driver = driver;
     }
 
-    protected abstract T fromResultSet(ResultSet rs) throws SQLException;
+    // MÉTODOS ABSTRATOS A SEREM IMPLEMENTADOS PELAS CLASSES FILHAS
 
-    protected abstract Object[] getInsertValues(T entity);
+    /**
+     * Mapeia um nó retornado pelo Neo4j para um objeto da entidade Java.
+     * @param node O nó do Neo4j.
+     * @return A entidade Java populada.
+     */
+    protected abstract T fromNode(Node node);
 
-    protected abstract Object[] getUpdateValues(T entity);
+    /**
+     * Converte uma entidade Java em um mapa de propriedades para ser usado em queries Cypher.
+     * @param entity A entidade a ser convertida.
+     * @return Um mapa onde a chave é o nome da propriedade e o valor é o valor da propriedade.
+     */
+    protected abstract Map<String, Object> toMap(T entity);
 
-    protected abstract String getAlias();
+    /**
+     * Retorna a Label do nó no banco de dados (ex: "Bloco", "Sala").
+     * @return A string da Label.
+     */
+    protected abstract String getLabel();
 
-    protected abstract List<String> getIdColumns();
+    /**
+     * Retorna o nome da propriedade que serve como identificador de negócio (ex: "codigo_bloco").
+     * @return A string do nome da propriedade.
+     */
+    protected abstract String getIdProperty();
 
-    protected abstract List<String> getColumns();
+    /**
+     * Obtém o valor do identificador de negócio a partir de uma entidade.
+     * @param entity A entidade.
+     * @return O valor do ID.
+     */
+    protected abstract K getIdValue(T entity);
 
-    protected abstract String getTableName();
 
-    protected abstract CompositeKey getIdValues(T entity);
+    // MÉTODOS CRUD CONCRETOS
 
-    protected abstract String getGeneratedKey();
-
-    protected String generateWhereClause() {
-        List<String> idColumns = getIdColumns();
-        StringBuilder where = new StringBuilder();
-        for (int i = 0; i < idColumns.size(); i++) {
-            if (i > 0) where.append(" AND ");
-            where.append(idColumns.get(i)).append(" = ?");
+    public void create(T entity) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                String cypher = String.format("CREATE (n:%s $props)", getLabel());
+                tx.run(cypher, Values.parameters("props", toMap(entity)));
+            });
         }
-        return where.toString();
     }
 
-    public void create(T entity) throws SQLException {
-        String sql = generateInsertSQL();
-        try (PreparedStatement st = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            Object[] values = getInsertValues(entity);
-            for (int i = 0; i < values.length; i++) {
-                st.setObject(i + 1, values[i]);
-            }
-            st.executeUpdate();
-
-            try (ResultSet generatedKeys = st.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    setGeneratedId(entity, generatedKeys);
-                }
-            }
-        }
-    }
-
-    public T findById(K id) throws SQLException {
-        String tableName = getAlias() + "." + getTableName();
-        List<String> idColumns = getIdColumns();
-        String sql = "SELECT * FROM " + tableName + " WHERE " + generateWhereClause();
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            if (id.getClass().equals(CompositeKey.class)) {
-                int i = 1;
-                for (String idColumn : idColumns) {
-                    stmt.setObject(i++, ((CompositeKey) id).getKey(idColumn));
-                }
-            } else {
-                stmt.setObject(1, id);
-            }
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return fromResultSet(rs);
+    public T findById(K id) {
+        try (Session session = driver.session()) {
+            return session.executeRead(tx -> {
+                String cypher = String.format("MATCH (n:%s {%s: $id}) RETURN n", getLabel(), getIdProperty());
+                Result result = tx.run(cypher, Values.parameters("id", id));
+                if (result.hasNext()) {
+                    return fromNode(result.single().get("n").asNode());
                 }
                 return null;
-            }
+            });
         }
     }
 
-    public List<T> findAll() throws SQLException {
-        String tableName = getAlias() + "." + getTableName();
-        String sql = "SELECT * FROM " + tableName;
-        List<T> results = new ArrayList<>();
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                results.add(fromResultSet(rs));
-            }
-        }
-
-        return results;
-    }
-
-
-    public void update(T entity) throws SQLException {
-        String tableName = getAlias() + "." + getTableName();
-        List<String> idColumns = getIdColumns();
-        String sql = "UPDATE " + tableName + " SET " + generateUpdateSetClause()
-                + " WHERE " + generateWhereClause();
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            Object[] updateValues = getUpdateValues(entity);
-            int i = 1;
-            for (Object value : updateValues) {
-                stmt.setObject(i++, value);
-            }
-
-            CompositeKey id = getIdValues(entity);
-            for (String idColumn : idColumns) {
-                stmt.setObject(i++, id.getKey(idColumn));
-            }
-
-            stmt.executeUpdate();
-        }
-    }
-
-    public void delete(K id) throws SQLException {
-        String tableName = getAlias() + "." + getTableName();
-        List<String> idColumns = getIdColumns();
-        String sql = "DELETE FROM " + tableName + " WHERE " + generateWhereClause();
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            if (id.getClass().equals(CompositeKey.class)) {
-                int i = 1;
-                for (String idColumn : idColumns) {
-                    stmt.setObject(i++, ((CompositeKey) id).getKey(idColumn));
+    public List<T> findAll() {
+        try (Session session = driver.session()) {
+            return session.executeRead(tx -> {
+                String cypher = String.format("MATCH (n:%s) RETURN n", getLabel());
+                Result result = tx.run(cypher);
+                List<T> entities = new ArrayList<>();
+                while (result.hasNext()) {
+                    entities.add(fromNode(result.next().get("n").asNode()));
                 }
-            } else {
-                stmt.setObject(1, id);
-            }
-            stmt.executeUpdate();
+                return entities;
+            });
         }
     }
 
-    protected String generateInsertSQL() {
-        String tableName = getAlias() + "." + getTableName();
-        List<String> columns = new ArrayList<>();
-        String generatedKey = getGeneratedKey();
-
-        if (generatedKey == null || generatedKey.isEmpty()) {
-            columns.addAll(getIdColumns());
+    public void update(T entity) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                String cypher = String.format("MATCH (n:%s {%s: $id}) SET n += $props", getLabel(), getIdProperty());
+                tx.run(cypher, Values.parameters(
+                        "id", getIdValue(entity),
+                        "props", toMap(entity)
+                ));
+            });
         }
-        columns.addAll(getColumns());
-
-        StringBuilder sql = new StringBuilder("INSERT INTO ")
-                .append(tableName)
-                .append(" (")
-                .append(String.join(", ", columns))
-                .append(") VALUES (")
-                .append(String.join(", ", Collections.nCopies(columns.size(), "?")))
-                .append(")");
-
-        return sql.toString();
     }
 
-    protected String generateUpdateSetClause() {
-        List<String> columns = getColumns();
-
-        StringBuilder setClause = new StringBuilder();
-        for (int i = 0; i < columns.size(); i++) {
-            if (i > 0) setClause.append(", ");
-            setClause.append(columns.get(i)).append(" = ?");
+    public void delete(K id) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                // DETACH DELETE remove o nó e todos os relacionamentos conectados a ele.
+                String cypher = String.format("MATCH (n:%s {%s: $id}) DETACH DELETE n", getLabel(), getIdProperty());
+                tx.run(cypher, Values.parameters("id", id));
+            });
         }
-
-        return setClause.toString();
     }
-
-    protected abstract void setGeneratedId(T entity, ResultSet generatedKeys) throws SQLException;
 }

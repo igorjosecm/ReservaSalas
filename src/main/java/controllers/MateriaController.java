@@ -1,10 +1,10 @@
 package controllers;
 
+import helpers.Helpers;
 import classes.Materia;
 import dao.MateriaDAO;
-import helpers.Helpers;
+import org.neo4j.driver.Driver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
@@ -12,8 +12,8 @@ import java.util.Scanner;
 public class MateriaController {
     private final MateriaDAO materiaDAO;
 
-    public MateriaController(Connection connection) {
-        this.materiaDAO = new MateriaDAO(connection);
+    public MateriaController(Driver driver) {
+        this.materiaDAO = new MateriaDAO(driver);
     }
 
     public void createMateria() throws SQLException {

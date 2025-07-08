@@ -1,11 +1,9 @@
 package controllers;
 
-import classes.CompositeKey;
-import classes.MateriaProfessor;
-import dao.MateriaProfessorDAO;
 import helpers.Helpers;
+import org.neo4j.driver.Driver;
+import dao.MateriaProfessorDAO;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -19,10 +17,10 @@ public class MateriaProfessorController {
     private final MateriaController materiaController;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public MateriaProfessorController(Connection connection) {
-        this.materiaProfessorDAO = new MateriaProfessorDAO(connection);
-        this.professorController = new ProfessorController(connection);
-        this.materiaController  = new MateriaController(connection);
+    public MateriaProfessorController(Driver driver) {
+        this.materiaProfessorDAO = new MateriaProfessorDAO(driver);
+        this.professorController = new ProfessorController(driver);
+        this.materiaController  = new MateriaController(driver);
     }
 
     public void createMateriaProfessor() throws SQLException {

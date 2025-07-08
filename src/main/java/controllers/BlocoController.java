@@ -1,10 +1,10 @@
 package controllers;
 
+import helpers.Helpers;
+import org.neo4j.driver.Driver;
 import classes.Bloco;
 import dao.BlocoDAO;
-import helpers.Helpers;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
@@ -12,8 +12,8 @@ import java.util.Scanner;
 public class BlocoController {
     private final BlocoDAO blocoDAO;
 
-    public BlocoController(Connection connection) {
-        this.blocoDAO = new BlocoDAO(connection);
+    public BlocoController(Driver driver) {
+        this.blocoDAO = new BlocoDAO(driver);
     }
 
     public void createBloco() throws SQLException {

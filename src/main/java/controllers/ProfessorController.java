@@ -1,10 +1,10 @@
 package controllers;
 
+import helpers.Helpers;
 import classes.Professor;
 import dao.ProfessorDAO;
-import helpers.Helpers;
+import org.neo4j.driver.Driver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,8 +15,8 @@ public class ProfessorController {
     private final ProfessorDAO professorDAO;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public ProfessorController(Connection connection) {
-        this.professorDAO = new ProfessorDAO(connection);
+    public ProfessorController(Driver driver) {
+        this.professorDAO = new ProfessorDAO(driver);
     }
 
     public void createProfessor() throws SQLException {

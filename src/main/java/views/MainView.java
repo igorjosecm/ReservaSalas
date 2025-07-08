@@ -1,13 +1,13 @@
 package views;
 
 import helpers.Helpers;
+import org.neo4j.driver.Driver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class MainView {
-    static public void menuPrincipal(Connection con, Scanner input) throws SQLException {
+    static public void menuPrincipal(Driver driver, Scanner input) throws SQLException {
         boolean rodando = true;
         while (rodando) {
             printMenu();
@@ -15,19 +15,19 @@ public class MainView {
 
             switch (opcao) {
                 case 1:
-                    ReservaView.menuReserva(con, input);
+                    ReservaView.menuReserva(driver, input);
                     break;
                 case 2:
-                    SalaView.menuSala(con, input);
+                    SalaView.menuSala(driver, input);
                     break;
                 case 3:
-                    BlocoView.menuBloco(con, input);
+                    BlocoView.menuBloco(driver, input);
                     break;
                 case 4:
-                    ProfessorView.menuProfessor(con, input);
+                    ProfessorView.menuProfessor(driver, input);
                     break;
                 case 5:
-                    MateriaView.menuMateria(con, input);
+                    MateriaView.menuMateria(driver, input);
                     break;
                 case 6:
                     rodando = false;

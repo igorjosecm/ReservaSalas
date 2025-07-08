@@ -1,15 +1,15 @@
 package views;
 
-import controllers.BlocoController;
 import helpers.Helpers;
+import controllers.BlocoController;
+import org.neo4j.driver.Driver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class BlocoView {
-    public static void menuBloco(Connection con, Scanner input) throws SQLException {
-        BlocoController blocoController = new BlocoController(con);
+    public static void menuBloco(Driver driver, Scanner input) throws SQLException {
+        BlocoController blocoController = new BlocoController(driver);
 
         boolean rodando = true;
         while (rodando) {
