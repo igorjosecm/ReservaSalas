@@ -3,11 +3,10 @@ package views;
 import helpers.Helpers;
 import org.neo4j.driver.Driver;
 
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class MainView {
-    static public void menuPrincipal(Driver driver, Scanner input) throws SQLException {
+    static public void menuPrincipal(Driver driver, Scanner input) {
         boolean rodando = true;
         while (rodando) {
             printMenu();

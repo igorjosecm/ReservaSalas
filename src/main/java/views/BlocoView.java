@@ -4,11 +4,10 @@ import helpers.Helpers;
 import controllers.BlocoController;
 import org.neo4j.driver.Driver;
 
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class BlocoView {
-    public static void menuBloco(Driver driver, Scanner input) throws SQLException {
+    public static void menuBloco(Driver driver, Scanner input) {
         BlocoController blocoController = new BlocoController(driver);
 
         boolean rodando = true;

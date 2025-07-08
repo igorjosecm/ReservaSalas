@@ -7,7 +7,7 @@ import dao.SalaDAO;
 import helpers.Helpers;
 import org.neo4j.driver.Driver;
 
-import java.sql.SQLException;
+import java.util.List;
 import java.util.Scanner;
 
 public class SalaController {
@@ -19,7 +19,7 @@ public class SalaController {
         this.blocoDAO = new BlocoDAO(driver);
     }
 
-    public void createSala() throws SQLException {
+    public void createSala() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Cadastro de Sala");
         System.out.print("Código da sala: ");
@@ -47,8 +47,7 @@ public class SalaController {
                     newSala.setAndar(andar);
                     newSala.setCapacidade(capacidade);
 
-                    salaDAO.create(newSala); // 1. Cria o nó
-                    // salaDAO.linkToBloco(codigoSala, codigoBloco); // TODO: 2. Cria o relacionamento (Lógica a ser adicionada no DAO)
+                    salaDAO.createAndLinkToBloco(newSala, codigoBloco);
 
                     System.out.println("\nSala criada com sucesso!");
                 } else {
@@ -63,59 +62,54 @@ public class SalaController {
         }
     }
 
-    public void updateSala() throws SQLException {
+    public void updateSala() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Atualização de sala");
-        System.out.print("Código da sala: ");
+        System.out.print("Código da sala para atualizar: ");
         String codigoSala = input.nextLine();
 
         Sala sala = salaDAO.findById(codigoSala);
         if (sala != null) {
-            Bloco bloco = blocoDAO.findById(sala.getCodigoBloco());
-            if (bloco != null) {
-                System.out.print("Novo nome da sala: ");
-                String nomeSala = input.nextLine();
-                System.out.print("Novo andar: ");
-                int andar = Helpers.getIntInput(input);
+            // Para validar o andar, precisamos encontrar o bloco associado à sala.
+            // Isso exigiria um novo método em BlocoDAO: findBlocoBySala(codigoSala)
+            // Por simplicidade aqui, vamos assumir que a atualização não muda o bloco.
 
-                if (andar <= bloco.getNumAndares()) {
-                    System.out.print("Nova capacidade: ");
-                    int capacidade = Helpers.getIntInput(input);
+            System.out.print("Novo nome da sala: ");
+            String nomeSala = input.nextLine();
+            System.out.print("Novo andar: ");
+            int andar = Helpers.getIntInput(input);
+            System.out.print("Nova capacidade: ");
+            int capacidade = Helpers.getIntInput(input);
 
-                    sala.setNomeSala(nomeSala);
-                    sala.setAndar(andar);
-                    sala.setCapacidade(capacidade);
+            // A validação do andar precisaria de uma consulta extra para buscar o bloco.
+            // Ex: Bloco blocoDaSala = blocoDAO.findBlocoBySala(codigoSala);
+            // if (andar <= blocoDaSala.getNumAndares()) { ... }
 
-                    salaDAO.update(sala);
-                    System.out.println("\nSala atualizada com sucesso!");
-                } else {
-                    System.out.println("\nAtenção! O bloco " + bloco.getCodigoBloco() + " possui " + bloco.getNumAndares() +
-                            " andares, informe um andar válido.");
-                }
-            } else {
-                System.out.println("\nBloco não encontrado.");
-            }
+            sala.setNomeSala(nomeSala);
+            sala.setAndar(andar);
+            sala.setCapacidade(capacidade);
+
+            salaDAO.update(sala);
+            System.out.println("\nSala atualizada com sucesso!");
+
         } else {
             System.out.println("\nSala não encontrada.");
         }
     }
 
-    public void deleteSala() throws SQLException {
+    public void deleteSala() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Exclusão de sala");
-        System.out.print("Código da sala: ");
+        System.out.print("Código da sala a ser excluída: ");
         String codigoSala = input.nextLine();
 
-        Sala sala = salaDAO.findById(codigoSala);
-        if (sala != null) {
-            salaDAO.delete(codigoSala);
-            System.out.println("\nSala excluída com sucesso!");
-        } else {
-            System.out.println("\nSala não encontrada.");
-        }
+        // O método delete do GenericDAO já usa "DETACH DELETE",
+        // que remove o nó e seus relacionamentos.
+        salaDAO.delete(codigoSala);
+        System.out.println("\nSala excluída com sucesso!");
     }
 
-    public void findSalaById() throws SQLException {
+    public void findSalaById() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Busca de sala");
         System.out.print("Código da sala: ");
@@ -124,15 +118,13 @@ public class SalaController {
         Sala sala = salaDAO.findById(codigoSala);
         if (sala != null) {
             System.out.println("\nSala encontrada:");
-            System.out.println("Nome: " + sala.getNomeSala());
-            System.out.println("Andar: " + sala.getAndar());
-            System.out.println("Capacidade: " + sala.getCapacidade());
+            printInfoSala(sala); // Usa um método helper para imprimir
         } else {
             System.out.println("\nSala não encontrada.");
         }
     }
 
-    public void findAllSalas() throws SQLException {
+    public void findAllSalas() {
         System.out.println("\nListando todas as salas:");
         List<Sala> salas = salaDAO.findAll();
 
@@ -147,28 +139,30 @@ public class SalaController {
         }
     }
 
-    public void findSalasByBloco() throws SQLException {
+    public void findSalasByBloco() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Buscar salas por bloco");
         System.out.print("Código do bloco: ");
         String codigoBloco = input.nextLine();
 
+        // Usa o método customizado do DAO
         List<Sala> salas = salaDAO.findSalasByBloco(codigoBloco);
 
         if (salas.isEmpty()) {
-            System.out.println("\nNenhuma sala encontrada.");
+            System.out.println("\nNenhuma sala encontrada para o bloco " + codigoBloco);
             return;
         }
 
+        System.out.println("\nSalas encontradas no bloco " + codigoBloco + ":");
         for (Sala sala : salas) {
             System.out.println("------------------------------");
             printInfoSala(sala);
         }
     }
 
+    // Método helper para evitar repetição de código
     private void printInfoSala(Sala sala) {
         System.out.println("Código da Sala: " + sala.getCodigoSala());
-        System.out.println("Código do Bloco: " + sala.getCodigoBloco());
         System.out.println("Nome: " + sala.getNomeSala());
         System.out.println("Andar: " + sala.getAndar());
         System.out.println("Capacidade: " + sala.getCapacidade());

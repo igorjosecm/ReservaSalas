@@ -1,22 +1,22 @@
 package controllers;
 
-import helpers.Helpers;
 import classes.Materia;
 import dao.MateriaDAO;
+import helpers.Helpers;
 import org.neo4j.driver.Driver;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
 public class MateriaController {
     private final MateriaDAO materiaDAO;
 
+    // Construtor atualizado para receber o Driver do Neo4j
     public MateriaController(Driver driver) {
         this.materiaDAO = new MateriaDAO(driver);
     }
 
-    public void createMateria() throws SQLException {
+    public void createMateria() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Cadastro de matéria");
         System.out.print("Código da matéria: ");
@@ -41,7 +41,7 @@ public class MateriaController {
         }
     }
 
-    public void updateMateria() throws SQLException {
+    public void updateMateria() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Atualização de matéria");
         System.out.print("Código da matéria: ");
@@ -51,7 +51,7 @@ public class MateriaController {
         if (materia != null) {
             System.out.print("Novo nome da matéria: ");
             String nomeMateria = input.nextLine();
-            System.out.print("Novo carga horária: ");
+            System.out.print("Nova carga horária: ");
             int cargaHoraria = Helpers.getIntInput(input);
 
             materia.setNomeMateria(nomeMateria);
@@ -64,14 +64,16 @@ public class MateriaController {
         }
     }
 
-    public void deleteMateria() throws SQLException {
+    public void deleteMateria() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Exclusão de matéria");
-        System.out.print("Código da materia: ");
+        System.out.print("Código da matéria: ");
         String codigoMateria = input.nextLine();
 
         Materia materia = materiaDAO.findById(codigoMateria);
         if (materia != null) {
+            // O GenericDAO.delete() usa DETACH DELETE, que removeria a matéria
+            // e qualquer relacionamento :LECIONA ou :REFERENTE_A conectado a ela.
             materiaDAO.delete(codigoMateria);
             System.out.println("\nMatéria excluída com sucesso!");
         } else {
@@ -79,7 +81,7 @@ public class MateriaController {
         }
     }
 
-    public void findMateriaById() throws SQLException {
+    public void findMateriaById() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Busca de matéria");
         System.out.print("Código da matéria: ");
@@ -88,14 +90,13 @@ public class MateriaController {
         Materia materia = materiaDAO.findById(codigoMateria);
         if (materia != null) {
             System.out.println("\nMatéria encontrada:");
-            System.out.println("Nome: " + materia.getNomeMateria());
-            System.out.println("Carga horária: " + materia.getCargaHoraria());
+            printInfoMateria(materia);
         } else {
             System.out.println("\nMatéria não encontrada.");
         }
     }
 
-    public void findAllMaterias() throws SQLException {
+    public void findAllMaterias() {
         System.out.println("\nListando todas as matérias:");
         List<Materia> materias = materiaDAO.findAll();
 
@@ -106,9 +107,13 @@ public class MateriaController {
 
         for (Materia materia : materias) {
             System.out.println("------------------------------");
-            System.out.println("Código da matéria: " + materia.getCodigoMateria());
-            System.out.println("Nome: " + materia.getNomeMateria());
-            System.out.println("Carga horária: " + materia.getCargaHoraria());
+            printInfoMateria(materia);
         }
+    }
+
+    private void printInfoMateria(Materia materia) {
+        System.out.println("Código da matéria: " + materia.getCodigoMateria());
+        System.out.println("Nome: " + materia.getNomeMateria());
+        System.out.println("Carga horária: " + materia.getCargaHoraria());
     }
 }

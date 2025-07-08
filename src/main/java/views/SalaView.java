@@ -4,11 +4,10 @@ import helpers.Helpers;
 import org.neo4j.driver.Driver;
 import controllers.SalaController;
 
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class SalaView {
-    public static void menuSala(Driver driver, Scanner input) throws SQLException {
+    public static void menuSala(Driver driver, Scanner input){
         SalaController salaController = new SalaController(driver);
 
         boolean rodando = true;

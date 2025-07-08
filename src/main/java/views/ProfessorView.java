@@ -4,11 +4,10 @@ import helpers.Helpers;
 import org.neo4j.driver.Driver;
 import controllers.ProfessorController;
 
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ProfessorView {
-    public static void menuProfessor(Driver driver, Scanner input) throws SQLException {
+    public static void menuProfessor(Driver driver, Scanner input) {
         ProfessorController professorController = new ProfessorController(driver);
 
         boolean rodando = true;

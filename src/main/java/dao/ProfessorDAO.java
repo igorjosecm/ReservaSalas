@@ -19,9 +19,12 @@ public class ProfessorDAO extends GenericDAO<Professor, Integer> {
         professor.setMatriculaProfessor(node.get("matricula_professor").asInt());
         professor.setNomeCompleto(node.get("nome_completo").asString());
         professor.setEmail(node.get("email").asString());
+
+        // Verifica se a propriedade existe antes de tentar acessá-la
         if (node.containsKey("data_nascimento")) {
             professor.setDataNascimento(node.get("data_nascimento").asLocalDate());
         }
+
         return professor;
     }
 

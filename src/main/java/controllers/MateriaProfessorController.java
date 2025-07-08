@@ -1,10 +1,11 @@
 package controllers;
 
+import classes.Materia;
+import dao.MateriaProfessorDAO;
 import helpers.Helpers;
 import org.neo4j.driver.Driver;
-import dao.MateriaProfessorDAO;
+import org.neo4j.driver.exceptions.Neo4jException;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -23,143 +24,82 @@ public class MateriaProfessorController {
         this.materiaController  = new MateriaController(driver);
     }
 
-    public void createMateriaProfessor() throws SQLException {
+    public void createOrUpdateMateriaProfessor() {
         Scanner input = new Scanner(System.in);
-        findAllMateriasProfessores();
+        System.out.println("\n- Vincular Matéria a Professor (ou atualizar período):");
 
-        System.out.println("\n- Relacionar matéria a professor: ");
-        materiaController.findAllMaterias();
-        System.out.println("Código da materia: ");
-        String codigoMateria = input.nextLine();
-        professorController.findAllProfessores();
-        System.out.println("Matrícula do professor: ");
-        Integer matriculaProfessor = Helpers.getIntInput(input);
+        try {
+            materiaController.findAllMaterias();
+            System.out.print("\nCódigo da matéria: ");
+            String codigoMateria = input.nextLine();
 
-        LocalDate inicioPeriodo;
-        LocalDate fimPeriodo;
+            professorController.findAllProfessores();
+            System.out.print("\nMatrícula do professor: ");
+            Integer matriculaProfessor = Helpers.getIntInput(input);
 
-        while (true) {
-            try {
-                System.out.print("Início do período (dd/mm/aaaa): ");
-                inicioPeriodo = LocalDate.parse(input.nextLine(), formatter);
-
-                System.out.print("Fim do período (dd/mm/aaaa): ");
-                fimPeriodo = LocalDate.parse(input.nextLine(), formatter);
-
-                if (inicioPeriodo.isAfter(fimPeriodo)) {
-                    System.out.println("A data inicial não pode ser após a data final. Tente novamente.");
-                } else {
+            LocalDate inicioPeriodo;
+            LocalDate fimPeriodo;
+            while (true) {
+                try {
+                    System.out.print("Início do período (dd/mm/aaaa): ");
+                    inicioPeriodo = LocalDate.parse(input.nextLine(), formatter);
+                    System.out.print("Fim do período (dd/mm/aaaa): ");
+                    fimPeriodo = LocalDate.parse(input.nextLine(), formatter);
                     break;
+                } catch (DateTimeParseException e) {
+                    System.out.println("Formato de data inválido. Use dd/mm/aaaa.");
                 }
-            } catch (DateTimeParseException e) {
-                System.out.println("Formato de data inválido. Use dd/mm/aaaa.");
             }
-        }
 
-        CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("matricula_professor", matriculaProfessor);
-        compositeKey.addKey("codigo_materia", codigoMateria);
+            materiaProfessorDAO.createLecionaRelationship(matriculaProfessor, codigoMateria, inicioPeriodo, fimPeriodo);
+            System.out.println("\nRelação criada/atualizada com sucesso!");
 
-        MateriaProfessor materiaProfessor = materiaProfessorDAO.findById(compositeKey);
-        if (materiaProfessor == null) {
-            MateriaProfessor newMateriaProfessor = new MateriaProfessor();
-            newMateriaProfessor.setCodigoMateria(codigoMateria);
-            newMateriaProfessor.setMatriculaProfessor(matriculaProfessor);
-            newMateriaProfessor.setInicioPeriodo(inicioPeriodo);
-            newMateriaProfessor.setFimPeriodo(fimPeriodo);
-
-            materiaProfessorDAO.create(newMateriaProfessor);
-            System.out.println("\nRelação adicionada com sucesso!");
-        } else {
-            System.out.println("\nEssa matéria já foi relacionada a esse professor, " +
-                    "altere o período para atualizá-la.");
+        } catch (Neo4jException e) {
+            System.err.println("\nErro ao criar o vínculo: " + e.getMessage());
+            System.err.println("Verifique se a matrícula e o código da matéria existem.");
         }
     }
 
-    public void deleteMateriaProfessor() throws SQLException {
+    public void deleteMateriaProfessor() {
         Scanner input = new Scanner(System.in);
-        findAllMateriasProfessores();
-        System.out.println("\n- Remoção de relação de materia com professor");
-        materiaController.findAllMaterias();
-        System.out.println("Código da materia: ");
-        String codigoMateria = input.nextLine();
-        professorController.findAllProfessores();
-        System.out.println("Matrícula do professor: ");
-        Integer matriculaProfessor = Helpers.getIntInput(input);
+        System.out.println("\n- Desvincular Matéria de Professor");
 
-        CompositeKey compositeKey = new CompositeKey();
-        compositeKey.addKey("codigo_materia", codigoMateria);
-        compositeKey.addKey("matricula_professor",matriculaProfessor);
+        try {
+            System.out.print("Código da matéria: ");
+            String codigoMateria = input.nextLine();
+            System.out.print("Matrícula do professor: ");
+            Integer matriculaProfessor = Helpers.getIntInput(input);
 
-        MateriaProfessor materiaProfessor = materiaProfessorDAO.findById(compositeKey);
-        if (materiaProfessor != null) {
-            materiaProfessorDAO.delete(compositeKey);
+            materiaProfessorDAO.deleteLecionaRelationship(matriculaProfessor, codigoMateria);
             System.out.println("\nRelação removida com sucesso!");
-        } else {
-            System.out.println("\nRelação não encontrada.");
+        } catch (Neo4jException e) {
+            System.err.println("\nErro ao remover o vínculo: " + e.getMessage());
         }
     }
 
-    public void findMateriaProfessorById() throws SQLException {
+    public void findMateriasOfProfessor() {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Busca de relação por matéria e matrícula");
-        materiaController.findAllMaterias();
-        System.out.println("Código da materia: ");
-        String codigoMateria = input.nextLine();
-        professorController.findAllProfessores();
-        System.out.println("Matrícula do professor: ");
-        Integer matriculaProfessor = Helpers.getIntInput(input);
+        System.out.println("\n- Relatório: Buscar matérias de um professor");
 
-        CompositeKey key = new CompositeKey();
-        key.addKey("codigo_materia", codigoMateria);
-        key.addKey("matricula_professor",matriculaProfessor);
+        try {
+            professorController.findAllProfessores();
+            System.out.print("\nMatrícula do professor: ");
+            Integer matriculaProfessor = Helpers.getIntInput(input);
 
-        MateriaProfessor materiaProfessor = materiaProfessorDAO.findById(key);
-        if (materiaProfessor != null) {
-            printInfoMateriaProfessor(materiaProfessor);
-        } else {
-            System.out.println("\nRelação não encontrada.");
+            List<Materia> materias = materiaProfessorDAO.findMateriasOfProfessor(matriculaProfessor);
+
+            if (materias.isEmpty()) {
+                System.out.println("\nNenhuma matéria encontrada para este professor.");
+                return;
+            }
+
+            System.out.println("\nMatérias lecionadas pelo professor " + matriculaProfessor + ":");
+            for (Materia materia : materias) {
+                System.out.println("  - " + materia.getNomeMateria() + " (" + materia.getCodigoMateria().trim() + ")");
+            }
+
+        } catch (Neo4jException e) {
+            System.err.println("\nErro ao buscar as matérias: " + e.getMessage());
         }
-    }
-
-    public void findMateriasOfProfessor() throws SQLException {
-        Scanner input = new Scanner(System.in);
-        System.out.println("\n- Buscar matérias relacionadas ao professor");
-        System.out.print("Matrícula do professor: ");
-        Integer matriculaProfessor = Helpers.getIntInput(input);
-
-        List<MateriaProfessor> materiaProfessors = materiaProfessorDAO.findAllMateriasOfProfessor(matriculaProfessor);
-
-        if (materiaProfessors.isEmpty()) {
-            System.out.println("\nNenhuma matéria relacionada ao professor.");
-            return;
-        }
-
-        for (MateriaProfessor materiaProfessor : materiaProfessors) {
-            System.out.println("------------------------------");
-            printInfoMateriaProfessor(materiaProfessor);
-        }
-    }
-
-    public void findAllMateriasProfessores() throws SQLException {
-        System.out.println("\nListando todas as materias relacionadas aos professores:");
-        List<MateriaProfessor> materiasProfessores = materiaProfessorDAO.findAll();
-
-        if (materiasProfessores.isEmpty()) {
-            System.out.println("\nNenhuma relação encontrada.");
-            return;
-        }
-
-        for (MateriaProfessor materiaProfessor : materiasProfessores) {
-            System.out.println("------------------------------");
-            printInfoMateriaProfessor(materiaProfessor);
-        }
-    }
-
-    private void printInfoMateriaProfessor(MateriaProfessor materiaProfessor) {
-        System.out.println("Código da materia: " + materiaProfessor.getCodigoMateria());
-        System.out.println("Matrícula do professor: " + materiaProfessor.getMatriculaProfessor());
-        System.out.println("Início período: " + formatter.format(materiaProfessor.getInicioPeriodo()));
-        System.out.println("Fim período: " + formatter.format(materiaProfessor.getFimPeriodo()));
     }
 }

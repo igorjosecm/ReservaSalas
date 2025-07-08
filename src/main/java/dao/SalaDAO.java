@@ -18,11 +18,51 @@ public class SalaDAO extends GenericDAO<Sala, String> {
         super(driver);
     }
 
+    /**
+     * Cria um nó de Sala e, na mesma transação, o conecta a um Bloco existente.
+     * @param sala O objeto Sala a ser criado.
+     * @param codigoBloco O código do Bloco ao qual a sala será vinculada.
+     */
+    public void createAndLinkToBloco(Sala sala, String codigoBloco) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                // Query combinada para criar o nó e o relacionamento
+                String cypher = "MATCH (b:Bloco {codigo_bloco: $codigoBloco}) " +
+                        "CREATE (s:Sala $props) " +
+                        "CREATE (s)-[:LOCALIZADA_EM]->(b)";
+
+                tx.run(cypher, Values.parameters(
+                        "codigoBloco", codigoBloco,
+                        "props", toMap(sala)
+                ));
+            });
+        }
+    }
+
+    /**
+     * Encontra todas as salas que pertencem a um bloco específico.
+     * @param codigoBloco O código do bloco a ser pesquisado.
+     * @return Uma lista de salas.
+     */
+    public List<Sala> findSalasByBloco(String codigoBloco) {
+        try (Session session = driver.session()) {
+            return session.executeRead(tx -> {
+                String cypher = "MATCH (s:Sala)-[:LOCALIZADA_EM]->(b:Bloco {codigo_bloco: $codigoBloco}) RETURN s";
+                Result result = tx.run(cypher, Values.parameters("codigoBloco", codigoBloco));
+                List<Sala> salas = new ArrayList<>();
+                while (result.hasNext()) {
+                    salas.add(fromNode(result.next().get("s").asNode()));
+                }
+                return salas;
+            });
+        }
+    }
+
+    // --- Implementação dos métodos abstratos do GenericDAO ---
+
     @Override
     protected Sala fromNode(Node node) {
         Sala sala = new Sala();
-        // A propriedade codigo_bloco não existe mais no nó Sala
-        // sala.setCodigoBloco(...);
         sala.setCodigoSala(node.get("codigo_sala").asString());
         sala.setNomeSala(node.get("nome_sala").asString());
         sala.setAndar(node.get("andar").asInt());
@@ -53,25 +93,5 @@ public class SalaDAO extends GenericDAO<Sala, String> {
     @Override
     protected String getIdValue(Sala entity) {
         return entity.getCodigoSala();
-    }
-
-    /**
-     * Encontra todas as salas que pertencem a um bloco específico.
-     * @param codigoBloco O código do bloco a ser pesquisado.
-     * @return Uma lista de salas.
-     */
-    public List<Sala> findSalasByBloco(String codigoBloco) {
-        try (Session session = driver.session()) {
-            return session.executeRead(tx -> {
-                // A query agora navega pelo relacionamento :LOCALIZADA_EM
-                String cypher = "MATCH (s:Sala)-[:LOCALIZADA_EM]->(b:Bloco {codigo_bloco: $codigoBloco}) RETURN s";
-                Result result = tx.run(cypher, Values.parameters("codigoBloco", codigoBloco));
-                List<Sala> salas = new ArrayList<>();
-                while (result.hasNext()) {
-                    salas.add(fromNode(result.next().get("s").asNode()));
-                }
-                return salas;
-            });
-        }
     }
 }

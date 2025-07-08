@@ -5,12 +5,11 @@ import controllers.MateriaController;
 import controllers.MateriaProfessorController;
 import org.neo4j.driver.Driver;
 
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class MateriaView {
 
-    public static void menuMateria(Driver driver, Scanner input) throws SQLException {
+    public static void menuMateria(Driver driver, Scanner input) {
         MateriaController materiaController = new MateriaController(driver);
         MateriaProfessorController materiaProfessorController = new MateriaProfessorController(driver);
 
@@ -36,18 +35,12 @@ public class MateriaView {
                     materiaController.findAllMaterias();
                     break;
                 case 6:
-                    materiaProfessorController.createMateriaProfessor();
+                    materiaProfessorController.createOrUpdateMateriaProfessor();
                     break;
                 case 7:
                     materiaProfessorController.deleteMateriaProfessor();
                     break;
                 case 8:
-                    materiaProfessorController.findMateriaProfessorById();
-                    break;
-                case 9:
-                    materiaProfessorController.findAllMateriasProfessores();
-                    break;
-                case 10:
                     materiaProfessorController.findMateriasOfProfessor();
                     break;
                 case 0:
@@ -74,9 +67,7 @@ public class MateriaView {
         System.out.println("5. Listar matérias");
         System.out.println("6. Cadastrar relação matéria e professor");
         System.out.println("7. Excluir relação matéria e professor");
-        System.out.println("8. Buscar relação matéria e professor");
-        System.out.println("9. Listar relações matéria e professor");
-        System.out.println("10. Relatório de matérias que há relação com o professor");
+        System.out.println("8. Relatório de matérias que há relação com o professor");
         System.out.println("0. Voltar ao menu principal");
         System.out.println("==============================");
     }

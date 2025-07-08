@@ -4,12 +4,11 @@ import helpers.Helpers;
 import controllers.ReservaController;
 import org.neo4j.driver.Driver;
 
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ReservaView {
 
-    public static void menuReserva(Driver driver, Scanner input) throws SQLException {
+    public static void menuReserva(Driver driver, Scanner input) {
         ReservaController reservaController = new ReservaController(driver);
 
         boolean rodando = true;
@@ -34,7 +33,7 @@ public class ReservaView {
                     reservaController.findAllReservas();
                     break;
                 case 6:
-                    reservaController.findReservasByBloco();
+                    reservaController.findAllReservasByBloco();
                     break;
                 case 7:
                     reservaController.findReservasByPeriodo();
