@@ -164,8 +164,6 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
         return detalhes;
     }
 
-    // --- Implementação dos métodos abstratos (fromNode, toMap, etc.) ---
-
     // --- Implementação dos métodos abstratos ---
 
     @Override
