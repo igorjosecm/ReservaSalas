@@ -2,6 +2,9 @@ package dao;
 
 import classes.Bloco;
 import org.neo4j.driver.Driver;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Values;
 import org.neo4j.driver.types.Node;
 
 import java.util.HashMap;
@@ -11,6 +14,24 @@ public class BlocoDAO extends GenericDAO<Bloco, String> {
 
     public BlocoDAO(Driver driver) {
         super(driver);
+    }
+
+    /**
+     * Encontra o Bloco associado a uma Sala específica.
+     * @param codigoSala O código da sala.
+     * @return O objeto Bloco correspondente, ou null se não for encontrado.
+     */
+    public Bloco findBlocoBySala(String codigoSala) {
+        try (Session session = driver.session()) {
+            return session.executeRead(tx -> {
+                String cypher = "MATCH (:Sala {codigo_sala: $codigoSala})-[:LOCALIZADA_EM]->(b:Bloco) RETURN b";
+                Result result = tx.run(cypher, Values.parameters("codigoSala", codigoSala));
+                if (result.hasNext()) {
+                    return fromNode(result.single().get("b").asNode());
+                }
+                return null;
+            });
+        }
     }
 
     @Override

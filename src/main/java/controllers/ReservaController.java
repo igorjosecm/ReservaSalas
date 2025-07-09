@@ -51,12 +51,15 @@ public class ReservaController {
             LocalDateTime fimReserva = LocalDateTime.of(dataFim, horaFim);
 
             if (fimReserva.isBefore(inicioReserva)) {
-                System.out.println("\nERRO: A data/hora de fim não pode ser anterior à data/hora de início.");
+                System.out.println("\nErro: A data/hora de fim não pode ser anterior à data/hora de início.");
                 return;
             }
 
-            // O método de verificação de conflito precisa ser adaptado para LocalDateTime
-            // if (reservaDAO.existeConflitoReserva(codigoSala, inicioReserva, fimReserva)) { ... }
+            if (reservaDAO.existeConflitoReserva(codigoSala, inicioReserva, fimReserva)) {
+                System.out.println("\nErro de conflito: Já existe uma reserva para esta sala que se sobrepõe ao período informado.");
+                System.out.println("Por favor, escolha outro horário ou outra sala.");
+                return;
+            }
 
             Reserva reserva = new Reserva();
             reserva.setIdReserva(idCounter.getAndIncrement());

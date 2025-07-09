@@ -4,6 +4,8 @@ import classes.Materia;
 import dao.MateriaDAO;
 import helpers.Helpers;
 import org.neo4j.driver.Driver;
+import org.neo4j.driver.exceptions.ClientException;
+import org.neo4j.driver.exceptions.Neo4jException;
 
 import java.util.List;
 import java.util.Scanner;
@@ -11,7 +13,6 @@ import java.util.Scanner;
 public class MateriaController {
     private final MateriaDAO materiaDAO;
 
-    // Construtor atualizado para receber o Driver do Neo4j
     public MateriaController(Driver driver) {
         this.materiaDAO = new MateriaDAO(driver);
     }
@@ -22,8 +23,12 @@ public class MateriaController {
         System.out.print("Código da matéria: ");
         String codigoMateria = input.nextLine();
 
-        Materia materia = materiaDAO.findById(codigoMateria);
-        if (materia == null) {
+        try {
+            if (materiaDAO.findById(codigoMateria) != null) {
+                System.out.println("\nErro: Uma matéria com este código já existe.");
+                return;
+            }
+
             System.out.print("Nome da matéria: ");
             String nomeMateria = input.nextLine();
             System.out.print("Carga horária: ");
@@ -35,49 +40,57 @@ public class MateriaController {
             newMateria.setCargaHoraria(cargaHoraria);
 
             materiaDAO.create(newMateria);
-            System.out.println("\nMateria criada com sucesso!");
-        } else {
-            System.out.println("\nEssa matéria já existe! Informe um código diferente.");
+            System.out.println("\nMatéria criada com sucesso!");
+
+        } catch (ClientException e) {
+            System.err.println("\nErro ao criar matéria: O código da matéria já está em uso. " + e.getMessage());
+        } catch (Neo4jException e) {
+            System.err.println("\nOcorreu um erro no banco de dados ao criar a matéria: " + e.getMessage());
         }
     }
 
     public void updateMateria() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Atualização de matéria");
-        System.out.print("Código da matéria: ");
+        System.out.print("Código da matéria a ser atualizada: ");
         String codigoMateria = input.nextLine();
 
-        Materia materia = materiaDAO.findById(codigoMateria);
-        if (materia != null) {
-            System.out.print("Novo nome da matéria: ");
-            String nomeMateria = input.nextLine();
-            System.out.print("Nova carga horária: ");
-            int cargaHoraria = Helpers.getIntInput(input);
+        try {
+            Materia materia = materiaDAO.findById(codigoMateria);
+            if (materia != null) {
+                System.out.print("Novo nome da matéria: ");
+                String nomeMateria = input.nextLine();
+                System.out.print("Nova carga horária: ");
+                int cargaHoraria = Helpers.getIntInput(input);
 
-            materia.setNomeMateria(nomeMateria);
-            materia.setCargaHoraria(cargaHoraria);
+                materia.setNomeMateria(nomeMateria);
+                materia.setCargaHoraria(cargaHoraria);
 
-            materiaDAO.update(materia);
-            System.out.println("\nMatéria atualizada com sucesso!");
-        } else {
-            System.out.println("\nMatéria não encontrada.");
+                materiaDAO.update(materia);
+                System.out.println("\nMatéria atualizada com sucesso!");
+            } else {
+                System.out.println("\nMatéria não encontrada.");
+            }
+        } catch (Neo4jException e) {
+            System.err.println("\nOcorreu um erro no banco de dados ao atualizar a matéria: " + e.getMessage());
         }
     }
 
     public void deleteMateria() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Exclusão de matéria");
-        System.out.print("Código da matéria: ");
+        System.out.print("Código da matéria a ser excluída: ");
         String codigoMateria = input.nextLine();
 
-        Materia materia = materiaDAO.findById(codigoMateria);
-        if (materia != null) {
-            // O GenericDAO.delete() usa DETACH DELETE, que removeria a matéria
-            // e qualquer relacionamento :LECIONA ou :REFERENTE_A conectado a ela.
+        try {
+            if (materiaDAO.findById(codigoMateria) == null) {
+                System.out.println("\nErro: Matéria não encontrada.");
+                return;
+            }
             materiaDAO.delete(codigoMateria);
-            System.out.println("\nMatéria excluída com sucesso!");
-        } else {
-            System.out.println("\nMatéria não encontrada.");
+            System.out.println("\nMatéria e seus vínculos foram excluídos com sucesso!");
+        } catch (Neo4jException e) {
+            System.err.println("\nOcorreu um erro no banco de dados ao excluir a matéria: " + e.getMessage());
         }
     }
 
@@ -87,27 +100,35 @@ public class MateriaController {
         System.out.print("Código da matéria: ");
         String codigoMateria = input.nextLine();
 
-        Materia materia = materiaDAO.findById(codigoMateria);
-        if (materia != null) {
-            System.out.println("\nMatéria encontrada:");
-            printInfoMateria(materia);
-        } else {
-            System.out.println("\nMatéria não encontrada.");
+        try {
+            Materia materia = materiaDAO.findById(codigoMateria);
+            if (materia != null) {
+                System.out.println("\nMatéria encontrada:");
+                printInfoMateria(materia);
+            } else {
+                System.out.println("\nMatéria não encontrada.");
+            }
+        } catch (Neo4jException e) {
+            System.err.println("\nOcorreu um erro no banco de dados ao buscar a matéria: " + e.getMessage());
         }
     }
 
     public void findAllMaterias() {
         System.out.println("\nListando todas as matérias:");
-        List<Materia> materias = materiaDAO.findAll();
+        try {
+            List<Materia> materias = materiaDAO.findAll();
 
-        if (materias.isEmpty()) {
-            System.out.println("\nNenhuma matéria encontrada.");
-            return;
-        }
+            if (materias.isEmpty()) {
+                System.out.println("\nNenhuma matéria encontrada.");
+                return;
+            }
 
-        for (Materia materia : materias) {
-            System.out.println("------------------------------");
-            printInfoMateria(materia);
+            for (Materia materia : materias) {
+                System.out.println("------------------------------");
+                printInfoMateria(materia);
+            }
+        } catch (Neo4jException e) {
+            System.err.println("\nOcorreu um erro no banco de dados ao listar as matérias: " + e.getMessage());
         }
     }
 
