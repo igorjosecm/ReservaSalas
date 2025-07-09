@@ -13,14 +13,11 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 public class ReservaController {
     private final ReservaDAO reservaDAO;
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-    private static final AtomicInteger idCounter = new AtomicInteger(1);
 
     public ReservaController(Driver driver) {
         this.reservaDAO = new ReservaDAO(driver);
@@ -62,7 +59,7 @@ public class ReservaController {
             }
 
             Reserva reserva = new Reserva();
-            reserva.setIdReserva(idCounter.getAndIncrement());
+            reserva.setIdReserva(reservaDAO.getNextId());
             reserva.setCodigoSala(codigoSala);
             reserva.setMatriculaProfessor(matriculaProfessor);
             reserva.setCodigoMateria(codMateria);
@@ -70,7 +67,7 @@ public class ReservaController {
             reserva.setFimReserva(fimReserva);
 
             reservaDAO.create(reserva);
-            System.out.println("\nReserva registrada com sucesso!");
+            System.out.println("\nReserva registrada com sucesso! Id: " + reserva.getIdReserva());
 
         } catch (Neo4jException e) {
             System.err.println("\nErro ao registrar a reserva: " + e.getMessage());
@@ -118,14 +115,14 @@ public class ReservaController {
     public void findAllReservas() {
         System.out.println("\nListando todas as reservas:");
         try {
-            List<Reserva> reservas = reservaDAO.findAll();
+            List<ReservaDetalhada> reservas = reservaDAO.findAllDetalhado();
             if (reservas.isEmpty()) {
                 System.out.println("\nNenhuma reserva encontrada.");
                 return;
             }
-            for (Reserva reserva : reservas) {
+            for (ReservaDetalhada reserva : reservas) {
                 System.out.println("------------------------------");
-                printInfoReserva(reserva);
+                printInfoReservaDetalhada(reserva);
             }
         } catch (Neo4jException e) {
             System.err.println("\nErro ao listar as reservas: " + e.getMessage());
@@ -189,16 +186,15 @@ public class ReservaController {
         String codigoBloco = input.nextLine();
 
         try {
-            List<Reserva> reservas = reservaDAO.findAllReservasByBloco(codigoBloco);
+            List<ReservaDetalhada> reservas = reservaDAO.findAllReservasByBlocoDetalhado(codigoBloco);
             if (reservas.isEmpty()) {
                 System.out.println("\nNenhuma reserva encontrada para o bloco " + codigoBloco);
                 return;
             }
             System.out.println("\nReservas encontradas no bloco " + codigoBloco + ":");
-            for (Reserva reserva : reservas) {
+            for (ReservaDetalhada reserva : reservas) {
                 System.out.println("------------------------------");
-                // Para mais detalhes, seria necessário chamar findReservaDetalhadaById
-                printInfoReserva(reserva);
+                printInfoReservaDetalhada(reserva);
             }
         } catch (Neo4jException e) {
             System.err.println("\nErro ao buscar reservas: " + e.getMessage());
@@ -221,15 +217,15 @@ public class ReservaController {
             LocalTime horaFim = Helpers.getLocalTimeInput(input);
             LocalDateTime fimPeriodo = LocalDateTime.of(dataFim, horaFim);
 
-            List<Reserva> reservas = reservaDAO.findAllReservasByPeriodo(inicioPeriodo, fimPeriodo);
+            List<ReservaDetalhada> reservas = reservaDAO.findAllReservasByPeriodoDetalhado(inicioPeriodo, fimPeriodo);
             if (reservas.isEmpty()) {
                 System.out.println("\nNenhuma reserva encontrada no período especificado.");
                 return;
             }
             System.out.println("\nReservas encontradas:");
-            for (Reserva reserva : reservas) {
+            for (ReservaDetalhada reserva : reservas) {
                 System.out.println("------------------------------");
-                printInfoReserva(reserva);
+                printInfoReservaDetalhada(reserva);
             }
         } catch (Neo4jException e) {
             System.err.println("\nErro ao buscar reservas por período: " + e.getMessage());

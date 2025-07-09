@@ -50,6 +50,22 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
     }
 
     /**
+     * Obtém o próximo ID disponível da sequência de reservas de forma atômica.
+     * @return O próximo ID único para uma reserva.
+     */
+    public Integer getNextId() {
+        try (Session session = driver.session()) {
+            return session.executeWrite(tx -> {
+                String cypher = "MATCH (s:Sequence {name: 'reserva_id'}) " +
+                        "SET s.current_id = s.current_id + 1 " +
+                        "RETURN s.current_id AS nextId";
+                Result result = tx.run(cypher);
+                return result.single().get("nextId").asInt();
+            });
+        }
+    }
+
+    /**
      * Verifica se já existe uma reserva conflitante para uma dada sala e período.
      * Atualizado para usar LocalDateTime.
      */
@@ -95,6 +111,21 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
         }
     }
 
+    /**
+     * Busca TODAS as reservas e retorna uma lista com detalhes completos.
+     */
+    public List<ReservaDetalhada> findAllDetalhado() {
+        try (Session session = driver.session()) {
+            String cypher = "MATCH (r:Reserva) " +
+                    "OPTIONAL MATCH (r)-[:FEITA_PARA]->(s:Sala) " +
+                    "OPTIONAL MATCH (r)-[:REALIZADA_POR]->(p:Professor) " +
+                    "OPTIONAL MATCH (r)-[:REFERENTE_A]->(m:Materia) " +
+                    "RETURN r, s.nome_sala AS nomeSala, p.nome_completo AS nomeProfessor, m.nome_materia AS nomeMateria " +
+                    "ORDER BY r.id_reserva";
+            return session.executeRead(tx -> tx.run(cypher).list(this::fromRecordToReservaDetalhada));
+        }
+    }
+
     // --- Métodos de Relatório ---
 
     /**
@@ -116,6 +147,20 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
     }
 
     /**
+     * Busca todas as reservas em um determinado bloco, com detalhes.
+     */
+    public List<ReservaDetalhada> findAllReservasByBlocoDetalhado(String codigoBloco) {
+        try (Session session = driver.session()) {
+            String cypher = "MATCH (:Bloco {codigo_bloco: $codigo})<-[:LOCALIZADA_EM]-(:Sala)<-[:FEITA_PARA]-(r:Reserva) " +
+                    "OPTIONAL MATCH (r)-[:FEITA_PARA]->(s:Sala) " +
+                    "OPTIONAL MATCH (r)-[:REALIZADA_POR]->(p:Professor) " +
+                    "OPTIONAL MATCH (r)-[:REFERENTE_A]->(m:Materia) " +
+                    "RETURN r, s.nome_sala AS nomeSala, p.nome_completo AS nomeProfessor, m.nome_materia AS nomeMateria";
+            return session.executeRead(tx -> tx.run(cypher, Values.parameters("codigo", codigoBloco)).list(this::fromRecordToReservaDetalhada));
+        }
+    }
+
+    /**
      * Busca todas as reservas dentro de um período de data e hora específico.
      */
     public List<Reserva> findAllReservasByPeriodo(LocalDateTime inicioPeriodo, LocalDateTime fimPeriodo) {
@@ -132,6 +177,27 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
                 }
                 return reservas;
             });
+        }
+    }
+
+    /**
+     * Busca todas as reservas dentro de um período de data e hora específico, com detalhes.
+     * @param inicioPeriodo O início do período de busca.
+     * @param fimPeriodo O fim do período de busca.
+     * @return Uma lista de objetos ReservaDetalhada.
+     */
+    public List<ReservaDetalhada> findAllReservasByPeriodoDetalhado(LocalDateTime inicioPeriodo, LocalDateTime fimPeriodo) {
+        try (Session session = driver.session()) {
+            String cypher = "MATCH (r:Reserva) " +
+                    "WHERE r.inicio_reserva >= $inicio AND r.fim_reserva <= $fim " +
+                    "OPTIONAL MATCH (r)-[:FEITA_PARA]->(s:Sala) " +
+                    "OPTIONAL MATCH (r)-[:REALIZADA_POR]->(p:Professor) " +
+                    "OPTIONAL MATCH (r)-[:REFERENTE_A]->(m:Materia) " +
+                    "RETURN r, s.nome_sala AS nomeSala, p.nome_completo AS nomeProfessor, m.nome_materia AS nomeMateria " +
+                    "ORDER BY r.inicio_reserva";
+
+            return session.executeRead(tx -> tx.run(cypher, Values.parameters("inicio", inicioPeriodo, "fim", fimPeriodo))
+                    .list(this::fromRecordToReservaDetalhada));
         }
     }
 
