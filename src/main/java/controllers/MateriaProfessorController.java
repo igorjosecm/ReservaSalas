@@ -1,6 +1,6 @@
 package controllers;
 
-import classes.Materia;
+import classes.MateriaLecionada;
 import dao.MateriaProfessorDAO;
 import helpers.Helpers;
 import org.neo4j.driver.Driver;
@@ -83,10 +83,11 @@ public class MateriaProfessorController {
 
         try {
             professorController.findAllProfessores();
-            System.out.print("\nMatrícula do professor: ");
+
+            System.out.print("\nDigite a matrícula do professor: ");
             Integer matriculaProfessor = Helpers.getIntInput(input);
 
-            List<Materia> materias = materiaProfessorDAO.findMateriasOfProfessor(matriculaProfessor);
+            List<MateriaLecionada> materias = materiaProfessorDAO.findMateriasLecionadasPorProfessor(matriculaProfessor);
 
             if (materias.isEmpty()) {
                 System.out.println("\nNenhuma matéria encontrada para este professor.");
@@ -94,8 +95,17 @@ public class MateriaProfessorController {
             }
 
             System.out.println("\nMatérias lecionadas pelo professor " + matriculaProfessor + ":");
-            for (Materia materia : materias) {
-                System.out.println("  - " + materia.getNomeMateria() + " (" + materia.getCodigoMateria().trim() + ")");
+            for (MateriaLecionada materia : materias) {
+                System.out.println("------------------------------");
+                System.out.println("  Matéria: " + materia.getNomeMateria() + " (" + materia.getCodigoMateria().trim() + ")");
+
+                // Exibe as novas informações de período
+                if (materia.getInicioPeriodo() != null && materia.getFimPeriodo() != null) {
+                    System.out.println("  Período: " + materia.getInicioPeriodo().format(formatter) +
+                            " a " + materia.getFimPeriodo().format(formatter));
+                } else {
+                    System.out.println("  Período: Não especificado.");
+                }
             }
 
         } catch (Neo4jException e) {

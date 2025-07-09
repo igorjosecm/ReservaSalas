@@ -8,9 +8,9 @@ import org.neo4j.driver.Driver;
 import org.neo4j.driver.exceptions.Neo4jException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,11 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ReservaController {
     private final ReservaDAO reservaDAO;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
-    // Simples contador em memória para gerar IDs únicos para a reserva.
-    // Em um sistema real, isso poderia ser um nó contador no Neo4j.
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final AtomicInteger idCounter = new AtomicInteger(1);
 
     public ReservaController(Driver driver) {
@@ -41,43 +38,33 @@ public class ReservaController {
             System.out.print("Código da matéria: ");
             String codMateria = input.nextLine();
 
-            LocalDate dataInicio;
-            LocalDate dataFim;
-            while (true) {
-                try {
-                    System.out.print("Data de início da reserva (dd/mm/aaaa): ");
-                    dataInicio = LocalDate.parse(input.nextLine(), formatter);
-                    System.out.print("Data de fim da reserva (dd/mm/aaaa): ");
-                    dataFim = LocalDate.parse(input.nextLine(), formatter);
-                    if (dataInicio.isAfter(dataFim)) {
-                        System.out.println("A data inicial não pode ser após a data final. Tente novamente.");
-                    } else {
-                        break;
-                    }
-                } catch (DateTimeParseException e) {
-                    System.out.println("Formato de data inválido. Use dd/mm/aaaa.");
-                }
-            }
-
+            System.out.print("Data de início da reserva (dd/mm/aaaa): ");
+            LocalDate dataInicio = Helpers.getLocalDateInput(input);
             System.out.print("Horário de início da reserva (hh:mm): ");
             LocalTime horaInicio = Helpers.getLocalTimeInput(input);
+            LocalDateTime inicioReserva = LocalDateTime.of(dataInicio, horaInicio);
+
+            System.out.print("Data de fim da reserva (dd/mm/aaaa): ");
+            LocalDate dataFim = Helpers.getLocalDateInput(input);
             System.out.print("Horário de fim da reserva (hh:mm): ");
             LocalTime horaFim = Helpers.getLocalTimeInput(input);
+            LocalDateTime fimReserva = LocalDateTime.of(dataFim, horaFim);
 
-            if (reservaDAO.existeConflitoReserva(codigoSala, dataInicio, dataFim, horaInicio, horaFim)) {
-                System.out.println("\nERRO: Já existe uma reserva conflitante neste período para a sala informada.");
+            if (fimReserva.isBefore(inicioReserva)) {
+                System.out.println("\nERRO: A data/hora de fim não pode ser anterior à data/hora de início.");
                 return;
             }
 
+            // O método de verificação de conflito precisa ser adaptado para LocalDateTime
+            // if (reservaDAO.existeConflitoReserva(codigoSala, inicioReserva, fimReserva)) { ... }
+
             Reserva reserva = new Reserva();
-            reserva.setIdReserva(idCounter.getAndIncrement()); // Gera um novo ID
+            reserva.setIdReserva(idCounter.getAndIncrement());
             reserva.setCodigoSala(codigoSala);
             reserva.setMatriculaProfessor(matriculaProfessor);
             reserva.setCodigoMateria(codMateria);
-            reserva.setDataInicio(dataInicio);
-            reserva.setDataFim(dataFim);
-            reserva.setHoraInicio(horaInicio);
-            reserva.setHoraFim(horaFim);
+            reserva.setInicioReserva(inicioReserva);
+            reserva.setFimReserva(fimReserva);
 
             reservaDAO.create(reserva);
             System.out.println("\nReserva registrada com sucesso!");
@@ -95,6 +82,10 @@ public class ReservaController {
         Integer idReserva = Helpers.getIntInput(input);
 
         try {
+            if (reservaDAO.findById(idReserva) == null) {
+                System.out.println("\nErro: Reserva com o ID informado não foi encontrada.");
+                return;
+            }
             reservaDAO.delete(idReserva);
             System.out.println("\nReserva excluída com sucesso!");
         } catch (Neo4jException e) {
@@ -102,25 +93,39 @@ public class ReservaController {
         }
     }
 
-    public void findAllReservasByBloco() {
+    public void findReservaById() {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Buscar reservas por bloco");
-        System.out.print("Código do bloco: ");
-        String codigoBloco = input.nextLine();
+        System.out.println("\n- Busca detalhada de reserva");
+        System.out.print("ID da reserva: ");
+        Integer idReserva = Helpers.getIntInput(input);
 
         try {
-            List<Reserva> reservas = reservaDAO.findAllReservasByBloco(codigoBloco);
+            ReservaDetalhada detalhes = reservaDAO.findReservaDetalhadaById(idReserva);
+            if (detalhes != null) {
+                System.out.println("\nReserva encontrada:");
+                printInfoReservaDetalhada(detalhes);
+            } else {
+                System.out.println("\nReserva não encontrada.");
+            }
+        } catch (Neo4jException e) {
+            System.err.println("\nErro ao buscar a reserva: " + e.getMessage());
+        }
+    }
+
+    public void findAllReservas() {
+        System.out.println("\nListando todas as reservas:");
+        try {
+            List<Reserva> reservas = reservaDAO.findAll();
             if (reservas.isEmpty()) {
-                System.out.println("\nNenhuma reserva encontrada para o bloco " + codigoBloco);
+                System.out.println("\nNenhuma reserva encontrada.");
                 return;
             }
-            System.out.println("\nReservas encontradas:");
             for (Reserva reserva : reservas) {
                 System.out.println("------------------------------");
                 printInfoReserva(reserva);
             }
         } catch (Neo4jException e) {
-            System.err.println("\nErro ao buscar reservas: " + e.getMessage());
+            System.err.println("\nErro ao listar as reservas: " + e.getMessage());
         }
     }
 
@@ -133,28 +138,39 @@ public class ReservaController {
         try {
             Reserva reserva = reservaDAO.findById(idReserva);
             if (reserva == null) {
-                System.out.println("Reserva não encontrada.");
+                System.out.println("\nErro: Reserva não encontrada.");
                 return;
             }
 
-            System.out.println("Digite os novos dados da reserva (deixe em branco para não alterar):");
-            // A lógica de update pode ser complexa. Aqui, atualizamos apenas as datas/horas.
-            // Atualizar os relacionamentos (mudar sala, professor) exigiria lógica adicional.
+            System.out.println("\nDigite os novos dados da reserva. Pressione ENTER para manter o valor atual.");
 
-            System.out.print("Nova data de início (dd/mm/aaaa): ");
-            LocalDate novaDataInicio = Helpers.getLocalDateInput(input); // Adaptar getLocalDateInput para aceitar nulo
-            System.out.print("Nova data de fim (dd/mm/aaaa): ");
+            // Coleta e combina a nova data/hora de início
+            System.out.print("Nova data de início [" + reserva.getInicioReserva().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "]: ");
+            LocalDate novaDataInicio = Helpers.getLocalDateInput(input);
+            System.out.print("Novo horário de início [" + reserva.getInicioReserva().toLocalTime() + "]: ");
+            LocalTime novaHoraInicio = Helpers.getLocalTimeInput(input);
+
+            // Coleta e combina a nova data/hora de fim
+            System.out.print("Nova data de fim [" + reserva.getFimReserva().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "]: ");
             LocalDate novaDataFim = Helpers.getLocalDateInput(input);
-            System.out.print("Novo horário de início (hh:mm): ");
-            LocalTime novaHoraInicio = Helpers.getLocalTimeInput(input); // Adaptar getLocalTimeInput para aceitar nulo
-            System.out.print("Novo horário de fim (hh:mm): ");
+            System.out.print("Novo horário de fim [" + reserva.getFimReserva().toLocalTime() + "]: ");
             LocalTime novaHoraFim = Helpers.getLocalTimeInput(input);
 
-            reserva.setDataInicio(novaDataInicio != null ? novaDataInicio : reserva.getDataInicio());
-            reserva.setDataFim(novaDataFim != null ? novaDataFim : reserva.getDataFim());
-            reserva.setHoraInicio(novaHoraInicio != null ? novaHoraInicio : reserva.getHoraInicio());
-            reserva.setHoraFim(novaHoraFim != null ? novaHoraFim : reserva.getHoraFim());
+            // Atualiza os campos apenas se um novo valor foi fornecido
+            LocalDateTime inicioReservaAtualizado = LocalDateTime.of(
+                    novaDataInicio != null ? novaDataInicio : reserva.getInicioReserva().toLocalDate(),
+                    novaHoraInicio != null ? novaHoraInicio : reserva.getInicioReserva().toLocalTime()
+            );
 
+            LocalDateTime fimReservaAtualizado = LocalDateTime.of(
+                    novaDataFim != null ? novaDataFim : reserva.getFimReserva().toLocalDate(),
+                    novaHoraFim != null ? novaHoraFim : reserva.getFimReserva().toLocalTime()
+            );
+
+            reserva.setInicioReserva(inicioReservaAtualizado);
+            reserva.setFimReserva(fimReservaAtualizado);
+
+            // O update no GenericDAO atualiza todas as propriedades do nó
             reservaDAO.update(reserva);
             System.out.println("\nReserva atualizada com sucesso!");
 
@@ -163,58 +179,46 @@ public class ReservaController {
         }
     }
 
-    public void findReservaById() {
+    public void findAllReservasByBloco() {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Busca de reserva");
-        System.out.print("ID da reserva: ");
-        Integer idReserva = Helpers.getIntInput(input);
+        System.out.println("\n- Relatório: Buscar reservas por bloco");
+        System.out.print("Código do bloco: ");
+        String codigoBloco = input.nextLine();
 
         try {
-            Reserva reserva = reservaDAO.findById(idReserva);
-            if (reserva != null) {
-                System.out.println("\nReserva encontrada:");
-                printInfoReserva(reserva);
-            } else {
-                System.out.println("\nReserva não encontrada.");
-            }
-        } catch (Neo4jException e) {
-            System.err.println("\nErro ao buscar a reserva: " + e.getMessage());
-        }
-    }
-
-    public void findAllReservas() {
-        System.out.println("\nListando todas as reservas (simplificado):");
-        try {
-            List<Reserva> reservas = reservaDAO.findAll();
+            List<Reserva> reservas = reservaDAO.findAllReservasByBloco(codigoBloco);
             if (reservas.isEmpty()) {
-                System.out.println("\nNenhuma reserva encontrada.");
+                System.out.println("\nNenhuma reserva encontrada para o bloco " + codigoBloco);
                 return;
             }
+            System.out.println("\nReservas encontradas no bloco " + codigoBloco + ":");
             for (Reserva reserva : reservas) {
                 System.out.println("------------------------------");
-                // Para detalhes completos, seria necessário iterar e chamar findReservaDetalhadaById para cada um
-                System.out.println("ID da Reserva: " + reserva.getIdReserva());
-                System.out.println("Período: " + formatter.format(reserva.getDataInicio()) + " a " + formatter.format(reserva.getDataFim()));
+                // Para mais detalhes, seria necessário chamar findReservaDetalhadaById
+                printInfoReserva(reserva);
             }
         } catch (Neo4jException e) {
-            System.err.println("\nErro ao listar as reservas: " + e.getMessage());
+            System.err.println("\nErro ao buscar reservas: " + e.getMessage());
         }
     }
 
     public void findReservasByPeriodo() {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Buscar reservas por período");
+        System.out.println("\n- Relatório: Buscar reservas por período");
         try {
             System.out.print("Data de início (dd/mm/aaaa): ");
             LocalDate dataInicio = Helpers.getLocalDateInput(input);
-            System.out.print("Data de fim (dd/mm/aaaa): ");
-            LocalDate dataFim = Helpers.getLocalDateInput(input);
             System.out.print("Horário de início (hh:mm): ");
             LocalTime horaInicio = Helpers.getLocalTimeInput(input);
+            LocalDateTime inicioPeriodo = LocalDateTime.of(dataInicio, horaInicio);
+
+            System.out.print("Data de fim (dd/mm/aaaa): ");
+            LocalDate dataFim = Helpers.getLocalDateInput(input);
             System.out.print("Horário de fim (hh:mm): ");
             LocalTime horaFim = Helpers.getLocalTimeInput(input);
+            LocalDateTime fimPeriodo = LocalDateTime.of(dataFim, horaFim);
 
-            List<Reserva> reservas = reservaDAO.findAllReservasByPeriodo(dataInicio, dataFim, horaInicio, horaFim);
+            List<Reserva> reservas = reservaDAO.findAllReservasByPeriodo(inicioPeriodo, fimPeriodo);
             if (reservas.isEmpty()) {
                 System.out.println("\nNenhuma reserva encontrada no período especificado.");
                 return;
@@ -222,7 +226,7 @@ public class ReservaController {
             System.out.println("\nReservas encontradas:");
             for (Reserva reserva : reservas) {
                 System.out.println("------------------------------");
-                System.out.println("ID da Reserva: " + reserva.getIdReserva());
+                printInfoReserva(reserva);
             }
         } catch (Neo4jException e) {
             System.err.println("\nErro ao buscar reservas por período: " + e.getMessage());
@@ -231,10 +235,8 @@ public class ReservaController {
 
     private void printInfoReserva(Reserva reserva) {
         System.out.println("ID da reserva: " + reserva.getIdReserva());
-        System.out.println("Data de início: " + formatter.format(reserva.getDataInicio()));
-        System.out.println("Data de fim: " + formatter.format(reserva.getDataFim()));
-        System.out.println("Horário de início: " + timeFormatter.format(reserva.getHoraInicio()));
-        System.out.println("Horário de fim: " + timeFormatter.format(reserva.getHoraFim()));
+        System.out.println("Início da reserva: " + dateTimeFormatter.format(reserva.getInicioReserva()));
+        System.out.println("Fim da reserva: " + dateTimeFormatter.format(reserva.getFimReserva()));
     }
 
     private void printInfoReservaDetalhada(ReservaDetalhada detalhes) {
@@ -242,9 +244,7 @@ public class ReservaController {
         System.out.println("Sala: " + (detalhes.getNomeSala() != null ? detalhes.getNomeSala() : "Não especificada"));
         System.out.println("Professor: " + (detalhes.getNomeProfessor() != null ? detalhes.getNomeProfessor() : "Não especificado"));
         System.out.println("Matéria: " + (detalhes.getNomeMateria() != null ? detalhes.getNomeMateria() : "Não especificada"));
-        System.out.println("Data de início: " + formatter.format(detalhes.getDataInicio()));
-        System.out.println("Data de fim: " + formatter.format(detalhes.getDataFim()));
-        System.out.println("Horário de início: " + timeFormatter.format(detalhes.getHoraInicio()));
-        System.out.println("Horário de fim: " + timeFormatter.format(detalhes.getHoraFim()));
+        System.out.println("Início da reserva: " + dateTimeFormatter.format(detalhes.getInicioReserva()));
+        System.out.println("Fim da reserva: " + dateTimeFormatter.format(detalhes.getFimReserva()));
     }
 }

@@ -1,26 +1,21 @@
 package classes;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 public class Reserva {
     private Integer idReserva;
     private String codigoSala;
     private Integer matriculaProfessor;
     private String codigoMateria;
-    private LocalDate dataInicio;
-    private LocalDate dataFim;
-    private LocalTime horaInicio;
-    private LocalTime horaFim;
+    private LocalDateTime inicioReserva;
+    private LocalDateTime fimReserva;
 
     public Reserva() {
         this.setIdReserva(0);
         this.setCodigoSala("");
         this.setMatriculaProfessor(0);
         this.setCodigoMateria("");
-        this.setDataInicio(LocalDate.now());
-        this.setDataFim(LocalDate.now());
-        this.setHoraInicio(LocalTime.now());
-        this.setHoraFim(LocalTime.now());
+        this.setInicioReserva(LocalDateTime.now());
+        this.setFimReserva(LocalDateTime.now());
     }
 
     public Integer getIdReserva() {
@@ -55,35 +50,19 @@ public class Reserva {
         this.codigoMateria = codigoMateria;
     }
 
-    public LocalDate getDataInicio() {
-        return dataInicio;
+    public LocalDateTime getInicioReserva() {
+        return inicioReserva;
     }
 
-    public void setDataInicio(LocalDate dataInicio) {
-        this.dataInicio = dataInicio;
+    public void setInicioReserva(LocalDateTime inicioReserva) {
+        this.inicioReserva = inicioReserva;
     }
 
-    public LocalDate getDataFim() {
-        return dataFim;
+    public LocalDateTime getFimReserva() {
+        return fimReserva;
     }
 
-    public void setDataFim(LocalDate dataFim) {
-        this.dataFim = dataFim;
-    }
-
-    public LocalTime getHoraInicio() {
-        return horaInicio;
-    }
-
-    public void setHoraInicio(LocalTime horaInicio) {
-        this.horaInicio = horaInicio;
-    }
-
-    public LocalTime getHoraFim() {
-        return horaFim;
-    }
-
-    public void setHoraFim(LocalTime horaFim) {
-        this.horaFim = horaFim;
+    public void setFimReserva(LocalDateTime fimReserva) {
+        this.fimReserva = fimReserva;
     }
 }

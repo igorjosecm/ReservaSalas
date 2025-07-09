@@ -43,7 +43,7 @@ public class MateriaView {
                 case 8:
                     materiaProfessorController.findMateriasOfProfessor();
                     break;
-                case 0:
+                case 9:
                     rodando = false;
                     break;
                 default:
@@ -68,7 +68,7 @@ public class MateriaView {
         System.out.println("6. Cadastrar relação matéria e professor");
         System.out.println("7. Excluir relação matéria e professor");
         System.out.println("8. Relatório de matérias que há relação com o professor");
-        System.out.println("0. Voltar ao menu principal");
+        System.out.println("9. Voltar ao menu principal");
         System.out.println("==============================");
     }
 }

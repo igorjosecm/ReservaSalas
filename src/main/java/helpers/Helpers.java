@@ -1,6 +1,9 @@
 package helpers;
 
+import org.neo4j.driver.Value;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -50,5 +53,17 @@ public class Helpers {
                 System.out.println("Formato de hora inválido. Use hh:mm.");
             }
         }
+    }
+
+    /**
+     * Converte um objeto Value do Neo4j para um LocalDateTime.
+     * @param value O objeto Value retornado pelo driver.
+     * @return um objeto LocalDateTime ou null se o valor for nulo.
+     */
+    public static LocalDateTime toLocalDateTime(Value value) {
+        if (value == null || value.isNull()) {
+            return null;
+        }
+        return value.asLocalDateTime();
     }
 }
