@@ -28,7 +28,7 @@ public class MainView {
                 case 5:
                     MateriaView.menuMateria(driver, input);
                     break;
-                case 6:
+                case 0:
                     rodando = false;
                     break;
                 default:
@@ -46,7 +46,7 @@ public class MainView {
         System.out.println("3. Cadastro de blocos");
         System.out.println("4. Matrícula de professores");
         System.out.println("5. Cadastro de matérias");
-        System.out.println("6. Sair");
+        System.out.println("0. Sair");
         System.out.println("==============================");
     }
 }

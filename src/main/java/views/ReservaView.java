@@ -38,7 +38,7 @@ public class ReservaView {
                 case 7:
                     reservaController.findReservasByPeriodo();
                     break;
-                case 8:
+                case 0:
                     rodando = false;
                     break;
                 default:
@@ -62,7 +62,7 @@ public class ReservaView {
         System.out.println("5. Listar reservas");
         System.out.println("6. Relatório de reservas por bloco");
         System.out.println("7. Relatório de reservas por período");
-        System.out.println("8. Voltar ao menu principal");
+        System.out.println("0. Voltar ao menu principal");
         System.out.println("==============================");
     }
 }

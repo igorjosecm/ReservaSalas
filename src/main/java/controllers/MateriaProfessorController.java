@@ -1,7 +1,10 @@
 package controllers;
 
 import classes.MateriaLecionada;
+import classes.MateriaProfessorRelacao;
+import dao.MateriaDAO;
 import dao.MateriaProfessorDAO;
+import dao.ProfessorDAO;
 import helpers.Helpers;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.exceptions.Neo4jException;
@@ -16,12 +19,16 @@ public class MateriaProfessorController {
     private final MateriaProfessorDAO materiaProfessorDAO;
     private final ProfessorController professorController;
     private final MateriaController materiaController;
+    private final ProfessorDAO professorDAO;
+    private final MateriaDAO materiaDAO;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public MateriaProfessorController(Driver driver) {
         this.materiaProfessorDAO = new MateriaProfessorDAO(driver);
         this.professorController = new ProfessorController(driver);
         this.materiaController  = new MateriaController(driver);
+        this.professorDAO = new ProfessorDAO(driver);
+        this.materiaDAO = new MateriaDAO(driver);
     }
 
     public void createOrUpdateMateriaProfessor() {
@@ -60,15 +67,53 @@ public class MateriaProfessorController {
         }
     }
 
+    /**
+     * Exibe todas as relações existentes para o usuário.
+     */
+    public void findAllMateriaProfessor() {
+        System.out.println("\n- Listando todas as relações Matéria-Professor:");
+        try {
+            List<MateriaProfessorRelacao> relacoes = materiaProfessorDAO.findAllLecionaRelationships();
+            if (relacoes.isEmpty()) {
+                System.out.println("Nenhuma relação encontrada.");
+                return;
+            }
+            for (MateriaProfessorRelacao rel : relacoes) {
+                System.out.println("------------------------------");
+                System.out.println("  Professor: " + rel.getNomeProfessor() + " (Matrícula: " + rel.getMatriculaProfessor() + ")");
+                System.out.println("  Matéria: " + rel.getNomeMateria() + " (Código: " + rel.getCodigoMateria().trim() + ")");
+                if (rel.getInicioPeriodo() != null && rel.getFimPeriodo() != null) {
+                    System.out.println("  Período: " + rel.getInicioPeriodo().format(formatter) +
+                            " a " + rel.getFimPeriodo().format(formatter));
+                }
+            }
+        } catch (Neo4jException e) {
+            System.err.println("\nErro ao buscar as relações: " + e.getMessage());
+        }
+    }
+
     public void deleteMateriaProfessor() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Desvincular Matéria de Professor");
 
+        findAllMateriaProfessor();
+
         try {
-            System.out.print("Código da matéria: ");
+            System.out.print("\nCódigo da matéria: ");
             String codigoMateria = input.nextLine();
+
+            if (materiaDAO.findById(codigoMateria) == null) {
+                System.out.println("\nErro: Matéria não encontrada.");
+                return;
+            }
+
             System.out.print("Matrícula do professor: ");
             Integer matriculaProfessor = Helpers.getIntInput(input);
+
+            if (professorDAO.findById(matriculaProfessor) == null) {
+                System.out.println("\nErro: Professor não encontrado.");
+                return;
+            }
 
             materiaProfessorDAO.deleteLecionaRelationship(matriculaProfessor, codigoMateria);
             System.out.println("\nRelação removida com sucesso!");

@@ -31,7 +31,7 @@ public class ProfessorView {
                 case 5:
                     professorController.findAllProfessores();
                     break;
-                case 6:
+                case 0:
                     rodando = false;
                     break;
                 default:
@@ -53,7 +53,7 @@ public class ProfessorView {
         System.out.println("3. Excluir professor");
         System.out.println("4. Buscar professor");
         System.out.println("5. Listar professores");
-        System.out.println("6. Voltar ao menu principal");
+        System.out.println("0. Voltar ao menu principal");
         System.out.println("==============================");
     }
 }

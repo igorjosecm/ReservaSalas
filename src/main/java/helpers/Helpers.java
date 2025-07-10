@@ -1,9 +1,6 @@
 package helpers;
 
-import org.neo4j.driver.Value;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -13,10 +10,10 @@ public class Helpers {
     public static int getIntInput(String prompt, Scanner input) {
         while (true) {
             try {
-                System.out.print(prompt.isEmpty() ? "Selecione a opção desejada: " : prompt );
+                System.out.print(prompt.isEmpty() ? "Selecione a opção desejada: " : prompt);
                 return Integer.parseInt(input.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Valor inválido. Por favor informe um número inteiro.");
+                System.out.println("Valor inválido. Por favor, informe um número inteiro.");
             }
         }
     }
@@ -26,44 +23,69 @@ public class Helpers {
             try {
                 return Integer.parseInt(input.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Valor inválido. Por favor informe um número inteiro.");
-            }
-        }
-    }
-
-    public static LocalDate getLocalDateInput(Scanner input) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        while (true) {
-            try {
-                String localDateInput = input.nextLine();
-                return LocalDate.parse(localDateInput, formatter);
-            } catch (DateTimeParseException e) {
-                System.out.println("Formato de data inválido. Use dd/mm/aaaa.");
-            }
-        }
-    }
-
-    public static LocalTime getLocalTimeInput(Scanner input) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        while (true) {
-            try {
-                String localDateInput = input.nextLine();
-                return LocalTime.parse(localDateInput, formatter);
-            } catch (DateTimeParseException e) {
-                System.out.println("Formato de hora inválido. Use hh:mm.");
+                System.out.println("Valor inválido. Por favor, informe um número inteiro.");
             }
         }
     }
 
     /**
-     * Converte um objeto Value do Neo4j para um LocalDateTime.
-     * @param value O objeto Value retornado pelo driver.
-     * @return um objeto LocalDateTime ou null se o valor for nulo.
+     * Obtém um LocalDate do usuário, sempre exigindo uma entrada válida.
+     * @param input O objeto Scanner.
+     * @return O LocalDate inserido.
      */
-    public static LocalDateTime toLocalDateTime(Value value) {
-        if (value == null || value.isNull()) {
-            return null;
-        }
-        return value.asLocalDateTime();
+    public static LocalDate getLocalDateInput(Scanner input) {
+        return getLocalDateInput(input, false);
     }
+
+    /**
+     * Obtém um LocalDate do usuário.
+     * @param input O objeto Scanner.
+     * @param allowEmpty Se true, permite que o usuário pressione ENTER para retornar null.
+     * @return O LocalDate inserido ou null se a entrada for vazia e permitida.
+     */
+    public static LocalDate getLocalDateInput(Scanner input, boolean allowEmpty) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        while (true) {
+            String userInput = input.nextLine();
+            if (allowEmpty && userInput.isEmpty()) {
+                return null;
+            }
+            try {
+                return LocalDate.parse(userInput, formatter);
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato de data inválido. Use dd/mm/aaaa ou deixe em branco se aplicável.");
+            }
+        }
+    }
+
+    /**
+     * Obtém um LocalTime do usuário, sempre exigindo uma entrada válida.
+     * @param input O objeto Scanner.
+     * @return O LocalTime inserido.
+     */
+    public static LocalTime getLocalTimeInput(Scanner input) {
+        return getLocalTimeInput(input, false);
+    }
+
+    /**
+     * Obtém um LocalTime do usuário.
+     * @param input O objeto Scanner.
+     * @param allowEmpty Se true, permite que o usuário pressione ENTER para retornar null.
+     * @return O LocalTime inserido ou null se a entrada for vazia e permitida.
+     */
+    public static LocalTime getLocalTimeInput(Scanner input, boolean allowEmpty) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        while (true) {
+            String userInput = input.nextLine();
+            if (allowEmpty && userInput.isEmpty()) {
+                return null;
+            }
+            try {
+                return LocalTime.parse(userInput, formatter);
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato de hora inválido. Use hh:mm ou deixe em branco se aplicável.");
+            }
+        }
+    }
+
 }

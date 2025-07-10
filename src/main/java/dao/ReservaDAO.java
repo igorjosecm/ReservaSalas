@@ -10,12 +10,12 @@ import org.neo4j.driver.Record;
 import org.neo4j.driver.types.Node;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static helpers.Helpers.toLocalDateTime;
+import static helpers.TypeConverter.toLocalDateTime;
 
 public class ReservaDAO extends GenericDAO<Reserva, Integer> {
 
@@ -129,24 +129,6 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
     // --- Métodos de Relatório ---
 
     /**
-     * Busca todas as reservas em um determinado bloco.
-     */
-    public List<Reserva> findAllReservasByBloco(String codigoBloco) {
-        List<Reserva> reservas = new ArrayList<>();
-        try (Session session = driver.session()) {
-            return session.executeRead(tx -> {
-                String cypher = "MATCH (b:Bloco {codigo_bloco: $codigoBloco})<-[:LOCALIZADA_EM]-(s:Sala)<-[:FEITA_PARA]-(r:Reserva) " +
-                        "RETURN r";
-                Result result = tx.run(cypher, Values.parameters("codigoBloco", codigoBloco));
-                while (result.hasNext()) {
-                    reservas.add(fromNode(result.next().get("r").asNode()));
-                }
-                return reservas;
-            });
-        }
-    }
-
-    /**
      * Busca todas as reservas em um determinado bloco, com detalhes.
      */
     public List<ReservaDetalhada> findAllReservasByBlocoDetalhado(String codigoBloco) {
@@ -160,43 +142,31 @@ public class ReservaDAO extends GenericDAO<Reserva, Integer> {
         }
     }
 
-    /**
-     * Busca todas as reservas dentro de um período de data e hora específico.
-     */
-    public List<Reserva> findAllReservasByPeriodo(LocalDateTime inicioPeriodo, LocalDateTime fimPeriodo) {
-        List<Reserva> reservas = new ArrayList<>();
-
-        try (Session session = driver.session()) {
-            return session.executeRead(tx -> {
-                String cypher = "MATCH (r:Reserva) WHERE r.inicio_reserva >= $inicio AND r.fim_reserva <= $fim RETURN r";
-                Result result = tx.run(cypher, Values.parameters(
-                        "inicio", inicioPeriodo, "fim", fimPeriodo
-                ));
-                while (result.hasNext()) {
-                    reservas.add(fromNode(result.next().get("r").asNode()));
-                }
-                return reservas;
-            });
-        }
-    }
 
     /**
-     * Busca todas as reservas dentro de um período de data e hora específico, com detalhes.
-     * @param inicioPeriodo O início do período de busca.
-     * @param fimPeriodo O fim do período de busca.
+     * Busca todas as reservas dentro de um período. O fim do período é opcional.
+     * Se fimPeriodo for nulo, busca todas as reservas para o dia de inicioPeriodo.
+     * @param inicioPeriodo O início do período de busca (obrigatório).
+     * @param fimPeriodo O fim do período de busca (opcional).
      * @return Uma lista de objetos ReservaDetalhada.
      */
     public List<ReservaDetalhada> findAllReservasByPeriodoDetalhado(LocalDateTime inicioPeriodo, LocalDateTime fimPeriodo) {
         try (Session session = driver.session()) {
             String cypher = "MATCH (r:Reserva) " +
-                    "WHERE r.inicio_reserva >= $inicio AND r.fim_reserva <= $fim " +
+                    "WHERE r.inicio_reserva >= $inicioPeriodo " +
+                    "AND ($fimPeriodo IS NULL OR r.fim_reserva <= $fimPeriodo) " +
                     "OPTIONAL MATCH (r)-[:FEITA_PARA]->(s:Sala) " +
                     "OPTIONAL MATCH (r)-[:REALIZADA_POR]->(p:Professor) " +
                     "OPTIONAL MATCH (r)-[:REFERENTE_A]->(m:Materia) " +
                     "RETURN r, s.nome_sala AS nomeSala, p.nome_completo AS nomeProfessor, m.nome_materia AS nomeMateria " +
                     "ORDER BY r.inicio_reserva";
 
-            return session.executeRead(tx -> tx.run(cypher, Values.parameters("inicio", inicioPeriodo, "fim", fimPeriodo))
+            // Se o fim do período não for fornecido, ajustamos o parâmetro para buscar apenas no dia do início.
+            LocalDateTime fimPeriodoReal = (fimPeriodo == null)
+                    ? inicioPeriodo.toLocalDate().atTime(LocalTime.MAX) // Fim do dia de inicioPeriodo
+                    : fimPeriodo;
+
+            return session.executeRead(tx -> tx.run(cypher, Values.parameters("inicioPeriodo", inicioPeriodo, "fimPeriodo", fimPeriodoReal))
                     .list(this::fromRecordToReservaDetalhada));
         }
     }

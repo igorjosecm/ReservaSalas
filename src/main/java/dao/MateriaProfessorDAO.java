@@ -2,6 +2,7 @@ package dao;
 
 import classes.Materia;
 import classes.MateriaLecionada;
+import classes.MateriaProfessorRelacao;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
@@ -116,6 +117,39 @@ public class MateriaProfessorDAO {
                     materiasLecionadas.add(dto);
                 }
                 return materiasLecionadas;
+            });
+        }
+    }
+
+    /**
+     * Busca todas as relações :LECIONA existentes no banco de dados.
+     * @return Uma lista de DTOs contendo os detalhes de cada relação.
+     */
+    public List<MateriaProfessorRelacao> findAllLecionaRelationships() {
+        List<MateriaProfessorRelacao> relacoes = new ArrayList<>();
+        try (Session session = driver.session()) {
+            return session.executeRead(tx -> {
+                String cypher = "MATCH (p:Professor)-[r:LECIONA]->(m:Materia) " +
+                        "RETURN p.matricula_professor AS matricula, p.nome_completo AS nomeProf, " +
+                        "m.codigo_materia AS codigo, m.nome_materia AS nomeMat, " +
+                        "r.inicio_periodo AS inicio, r.fim_periodo AS fim " +
+                        "ORDER BY p.nome_completo, m.nome_materia";
+
+                Result result = tx.run(cypher);
+                while(result.hasNext()) {
+                    Record record = result.next();
+                    MateriaProfessorRelacao dto = new MateriaProfessorRelacao();
+
+                    dto.setMatriculaProfessor(record.get("matricula").asInt());
+                    dto.setNomeProfessor(record.get("nomeProf").asString());
+                    dto.setCodigoMateria(record.get("codigo").asString());
+                    dto.setNomeMateria(record.get("nomeMat").asString());
+                    dto.setInicioPeriodo(record.get("inicio").asLocalDate());
+                    dto.setFimPeriodo(record.get("fim").asLocalDate());
+
+                    relacoes.add(dto);
+                }
+                return relacoes;
             });
         }
     }

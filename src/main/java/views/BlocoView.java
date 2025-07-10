@@ -31,7 +31,7 @@ public class BlocoView {
                 case 5:
                     blocoController.findAllBlocos();
                     break;
-                case 6:
+                case 0:
                     rodando = false;
                     break;
                 default:
@@ -53,7 +53,7 @@ public class BlocoView {
         System.out.println("3. Excluir bloco");
         System.out.println("4. Buscar bloco");
         System.out.println("5. Listar blocos");
-        System.out.println("6. Voltar ao menu principal");
+        System.out.println("0. Voltar ao menu principal");
         System.out.println("==============================");
     }
 }

@@ -34,7 +34,7 @@ public class SalaView {
                 case 6:
                     salaController.findSalasByBloco();
                     break;
-                case 7:
+                case 0:
                     rodando = false;
                     break;
                 default:
@@ -57,7 +57,7 @@ public class SalaView {
         System.out.println("4. Buscar sala");
         System.out.println("5. Listar salas");
         System.out.println("6. Relatório de salas por bloco");
-        System.out.println("7. Voltar ao menu principal");
+        System.out.println("0. Voltar ao menu principal");
         System.out.println("==============================");
     }
 }

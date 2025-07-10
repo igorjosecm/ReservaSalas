@@ -138,7 +138,7 @@ public class ReservaController {
         try {
             Reserva reserva = reservaDAO.findById(idReserva);
             if (reserva == null) {
-                System.out.println("\nErro: Reserva não encontrada.");
+                System.out.println("\nReserva não encontrada.");
                 return;
             }
 
@@ -146,15 +146,15 @@ public class ReservaController {
 
             // Coleta e combina a nova data/hora de início
             System.out.print("Nova data de início [" + reserva.getInicioReserva().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "]: ");
-            LocalDate novaDataInicio = Helpers.getLocalDateInput(input);
+            LocalDate novaDataInicio = Helpers.getLocalDateInput(input, true);
             System.out.print("Novo horário de início [" + reserva.getInicioReserva().toLocalTime() + "]: ");
-            LocalTime novaHoraInicio = Helpers.getLocalTimeInput(input);
+            LocalTime novaHoraInicio = Helpers.getLocalTimeInput(input, true);
 
             // Coleta e combina a nova data/hora de fim
             System.out.print("Nova data de fim [" + reserva.getFimReserva().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "]: ");
-            LocalDate novaDataFim = Helpers.getLocalDateInput(input);
+            LocalDate novaDataFim = Helpers.getLocalDateInput(input, true);
             System.out.print("Novo horário de fim [" + reserva.getFimReserva().toLocalTime() + "]: ");
-            LocalTime novaHoraFim = Helpers.getLocalTimeInput(input);
+            LocalTime novaHoraFim = Helpers.getLocalTimeInput(input, true);
 
             // Atualiza os campos apenas se um novo valor foi fornecido
             LocalDateTime inicioReservaAtualizado = LocalDateTime.of(
@@ -204,24 +204,42 @@ public class ReservaController {
     public void findReservasByPeriodo() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Relatório: Buscar reservas por período");
-        try {
-            System.out.print("Data de início (dd/mm/aaaa): ");
-            LocalDate dataInicio = Helpers.getLocalDateInput(input);
-            System.out.print("Horário de início (hh:mm): ");
-            LocalTime horaInicio = Helpers.getLocalTimeInput(input);
-            LocalDateTime inicioPeriodo = LocalDateTime.of(dataInicio, horaInicio);
+        System.out.println("A data de início é obrigatória. Os outros campos são opcionais.");
 
-            System.out.print("Data de fim (dd/mm/aaaa): ");
-            LocalDate dataFim = Helpers.getLocalDateInput(input);
-            System.out.print("Horário de fim (hh:mm): ");
-            LocalTime horaFim = Helpers.getLocalTimeInput(input);
-            LocalDateTime fimPeriodo = LocalDateTime.of(dataFim, horaFim);
+        try {
+            // --- Início do Período (Obrigatório) ---
+            System.out.print("Data de início (dd/mm/aaaa): ");
+            LocalDate dataInicio = Helpers.getLocalDateInput(input, false); // Não permite vazio
+
+            System.out.print("Horário de início (hh:mm) [opcional, padrão 00:00]: ");
+            LocalTime horaInicio = Helpers.getLocalTimeInput(input, true); // Permite vazio
+            // Se a hora for nula, usa o início do dia.
+            LocalDateTime inicioPeriodo = LocalDateTime.of(dataInicio, horaInicio != null ? horaInicio : LocalTime.MIN);
+
+            // --- Fim do Período (Opcional) ---
+            System.out.print("Data de fim (dd/mm/aaaa) [opcional, padrão mesmo dia do início]: ");
+            LocalDate dataFim = Helpers.getLocalDateInput(input, true); // Permite vazio
+
+            LocalDateTime fimPeriodo = null;
+            if (dataFim != null) {
+                System.out.print("Horário de fim (hh:mm) [opcional, padrão 23:59]: ");
+                LocalTime horaFim = Helpers.getLocalTimeInput(input, true); // Permite vazio
+                // Se a hora for nula, usa o fim do dia.
+                fimPeriodo = LocalDateTime.of(dataFim, horaFim != null ? horaFim : LocalTime.MAX);
+
+                if (fimPeriodo.isBefore(inicioPeriodo)) {
+                    System.out.println("\nERRO: O período de fim não pode ser anterior ao período de início.");
+                    return;
+                }
+            }
 
             List<ReservaDetalhada> reservas = reservaDAO.findAllReservasByPeriodoDetalhado(inicioPeriodo, fimPeriodo);
+
             if (reservas.isEmpty()) {
-                System.out.println("\nNenhuma reserva encontrada no período especificado.");
+                System.out.println("\nNenhuma reserva encontrada para os critérios informados.");
                 return;
             }
+
             System.out.println("\nReservas encontradas:");
             for (ReservaDetalhada reserva : reservas) {
                 System.out.println("------------------------------");
@@ -229,13 +247,9 @@ public class ReservaController {
             }
         } catch (Neo4jException e) {
             System.err.println("\nErro ao buscar reservas por período: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("\nOcorreu um erro inesperado ao processar as datas: " + e.getMessage());
         }
-    }
-
-    private void printInfoReserva(Reserva reserva) {
-        System.out.println("ID da reserva: " + reserva.getIdReserva());
-        System.out.println("Início da reserva: " + dateTimeFormatter.format(reserva.getInicioReserva()));
-        System.out.println("Fim da reserva: " + dateTimeFormatter.format(reserva.getFimReserva()));
     }
 
     private void printInfoReservaDetalhada(ReservaDetalhada detalhes) {
