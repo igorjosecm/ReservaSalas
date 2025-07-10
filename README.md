@@ -67,3 +67,47 @@ Utilize o script de backup (`reserva_salas_backup.cypher`) localizado na raiz do
     ```
 
 A aplicação irá iniciar, verificar a conexão com o banco de dados e, se tudo estiver correto, o menu principal será exibido.
+
+### 6\. Navegando pela Aplicação
+
+A aplicação funciona através de um menu de texto interativo no console. A navegação é baseada na inserção de números correspondentes às opções exibidas na tela.
+
+### Menu Principal
+
+Ao iniciar, você será apresentado ao menu principal, que centraliza o acesso às principais funcionalidades do sistema:
+
+```bash
+   ====== Reserva de Salas ======
+   1. Reservar sala
+   2. Cadastro de salas
+   3. Cadastro de blocos
+   4. Matrícula de professores
+   5. Cadastro de matérias
+   0. Sair
+   ==============================
+```
+
+**Opções de 1 a 5:** Cada opção leva a um sub-menu dedicado ao gerenciamento daquela entidade (Reservas, Salas, Blocos, etc.).
+
+**Opção 0:** Encerra a aplicação.
+
+### Sub-menus de Gerenciamento
+Cada sub-menu (ex: "Cadastro de Salas") segue um padrão similar, oferecendo as operações CRUD (Criar, Ler, Atualizar, Deletar) para a entidade correspondente, além de relatórios específicos. Um menu típico de gerenciamento se parecerá com isto:
+```bash
+   =========== Salas ===========
+   1. Cadastrar sala
+   2. Alterar sala
+   3. Excluir sala
+   4. Buscar sala
+   5. Listar todas as salas
+   6. Relatório de salas por bloco
+   7. Voltar ao menu principal
+   =============================
+```
+**Operações Padrão:** Você encontrará consistentemente opções para cadastrar, alterar, excluir, buscar por ID e listar todos os itens.
+
+**Relatórios:** Alguns menus oferecem relatórios úteis, como listar todas as salas de um bloco específico.
+
+**Voltar:** Cada sub-menu tem uma opção para retornar ao menu principal, permitindo uma navegação fluida por toda a aplicação.
+
+Cada opção leva a um sub-menu com operações de cadastro, alteração, exclusão, busca e listagem para a entidade correspondente.
