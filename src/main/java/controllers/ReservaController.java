@@ -78,10 +78,13 @@ public class ReservaController {
     public void deleteReserva() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Exclusão de reserva");
-        System.out.print("ID da reserva a ser excluída: ");
-        Integer idReserva = Helpers.getIntInput(input);
 
         try {
+            findAllReservas();
+
+            System.out.print("\nID da reserva a ser excluída: ");
+            Integer idReserva = Helpers.getIntInput(input);
+
             if (reservaDAO.findById(idReserva) == null) {
                 System.out.println("\nErro: Reserva com o ID informado não foi encontrada.");
                 return;
@@ -132,10 +135,13 @@ public class ReservaController {
     public void updateReserva() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Atualização de reserva de sala");
-        System.out.print("ID da reserva a ser atualizada: ");
-        Integer idReserva = Helpers.getIntInput(input);
 
         try {
+            findAllReservas();
+
+            System.out.print("\nID da reserva a ser atualizada: ");
+            Integer idReserva = Helpers.getIntInput(input);
+
             Reserva reserva = reservaDAO.findById(idReserva);
             if (reserva == null) {
                 System.out.println("\nReserva não encontrada.");

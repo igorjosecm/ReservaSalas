@@ -53,10 +53,13 @@ public class BlocoController {
     public void updateBloco() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Atualização de bloco");
-        System.out.print("Código do bloco: ");
-        String codigoBloco = input.nextLine();
 
         try {
+            findAllBlocos();
+
+            System.out.print("\nCódigo do bloco: ");
+            String codigoBloco = input.nextLine();
+
             Bloco bloco = blocoDAO.findById(codigoBloco);
             if (bloco != null) {
                 System.out.print("Novo nome do bloco: ");
@@ -79,22 +82,25 @@ public class BlocoController {
 
     public void deleteBloco() {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Exclusão de bloco");
-        System.out.println("Atenção! Ao excluir um bloco, as salas conectadas a ele também serão excluídas.");
-        System.out.print("Código do bloco: ");
-        String codigoBloco = input.nextLine();
+        System.out.println("\n- Desativar Bloco e suas Salas");
+        System.out.println("Atenção! Esta ação tornará o bloco e todas as salas dentro dele inativos.");
 
         try {
+            findAllBlocos();
+
+            System.out.print("\nCódigo do bloco a ser desativado: ");
+            String codigoBloco = input.nextLine();
+
             if (blocoDAO.findById(codigoBloco) == null) {
                 System.out.println("\nErro: Bloco não encontrado.");
                 return;
             }
 
-            blocoDAO.delete(codigoBloco);
-            System.out.println("\nBloco e salas conectadas (se houver) foram excluídos com sucesso!");
+            blocoDAO.deactivateBlocoAndSalas(codigoBloco);
+            System.out.println("\nBloco e todas as suas salas foram desativados com sucesso!");
 
         } catch (Neo4jException e) {
-            System.err.println("\nOcorreu um erro no banco de dados ao excluir o bloco: " + e.getMessage());
+            System.err.println("\nOcorreu um erro no banco de dados ao desativar o bloco: " + e.getMessage());
         }
     }
 

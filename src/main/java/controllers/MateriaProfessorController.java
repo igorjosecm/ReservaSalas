@@ -96,9 +96,9 @@ public class MateriaProfessorController {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Desvincular Matéria de Professor");
 
-        findAllMateriaProfessor();
-
         try {
+            findAllMateriaProfessor();
+
             System.out.print("\nCódigo da matéria: ");
             String codigoMateria = input.nextLine();
 

@@ -52,10 +52,13 @@ public class MateriaController {
     public void updateMateria() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Atualização de matéria");
-        System.out.print("Código da matéria a ser atualizada: ");
-        String codigoMateria = input.nextLine();
 
         try {
+            findAllMaterias();
+
+            System.out.print("\nCódigo da matéria a ser atualizada: ");
+            String codigoMateria = input.nextLine();
+
             Materia materia = materiaDAO.findById(codigoMateria);
             if (materia != null) {
                 System.out.print("Novo nome da matéria: ");
@@ -78,19 +81,24 @@ public class MateriaController {
 
     public void deleteMateria() {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Exclusão de matéria");
-        System.out.print("Código da matéria a ser excluída: ");
-        String codigoMateria = input.nextLine();
+        System.out.println("\n- Desativar Matéria");
+        System.out.println("Atenção! Esta ação tornará a matéria inativa, preservando todo o seu histórico.");
 
         try {
+            findAllMaterias();
+            System.out.print("\nDigite o código da matéria que deseja desativar: ");
+            String codigoMateria = input.nextLine();
+
             if (materiaDAO.findById(codigoMateria) == null) {
-                System.out.println("\nErro: Matéria não encontrada.");
+                System.out.println("\nErro: Matéria não encontrada ou já está inativa.");
                 return;
             }
-            materiaDAO.delete(codigoMateria);
-            System.out.println("\nMatéria e seus vínculos foram excluídos com sucesso!");
+
+            materiaDAO.deactivateMateria(codigoMateria);
+
+            System.out.println("\nMatéria desativada com sucesso. Ela não aparecerá mais nas listagens, mas seu histórico foi preservado.");
         } catch (Neo4jException e) {
-            System.err.println("\nOcorreu um erro no banco de dados ao excluir a matéria: " + e.getMessage());
+            System.err.println("\nOcorreu um erro no banco de dados ao desativar a matéria: " + e.getMessage());
         }
     }
 

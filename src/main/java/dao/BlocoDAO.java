@@ -8,6 +8,7 @@ import org.neo4j.driver.Values;
 import org.neo4j.driver.types.Node;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BlocoDAO extends GenericDAO<Bloco, String> {
@@ -35,6 +36,25 @@ public class BlocoDAO extends GenericDAO<Bloco, String> {
     }
 
     @Override
+    public List<Bloco> findAll() {
+        try (Session session = driver.session()) {
+            String cypher = "MATCH (n:Bloco) WHERE n.ativo = true RETURN n";
+            return session.executeRead(tx -> tx.run(cypher).list(record -> fromNode(record.get("n").asNode())));
+        }
+    }
+
+    public void deactivateBlocoAndSalas(String codigoBloco) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                String cypher = "MATCH (b:Bloco {codigo_bloco: $id}) " +
+                        "OPTIONAL MATCH (b)<-[:LOCALIZADA_EM]-(s:Sala) " +
+                        "SET b.ativo = false, s.ativo = false";
+                tx.run(cypher, Values.parameters("id", codigoBloco));
+            });
+        }
+    }
+
+    @Override
     protected Bloco fromNode(Node node) {
         Bloco bloco = new Bloco();
         bloco.setCodigoBloco(node.get("codigo_bloco").asString());
@@ -49,6 +69,7 @@ public class BlocoDAO extends GenericDAO<Bloco, String> {
         map.put("codigo_bloco", entity.getCodigoBloco());
         map.put("nome_bloco", entity.getNomeBloco());
         map.put("num_andares", entity.getNumAndares());
+        map.put("ativo", true);
         return map;
     }
 

@@ -62,10 +62,13 @@ public class ProfessorController {
     public void updateProfessor() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Atualização de professor");
-        System.out.print("Matrícula do professor a ser atualizado: ");
-        Integer matriculaProfessor = Helpers.getIntInput(input);
 
         try {
+            findAllProfessores();
+
+            System.out.print("\nMatrícula do professor a ser atualizado: ");
+            Integer matriculaProfessor = Helpers.getIntInput(input);
+
             Professor professor = professorDAO.findById(matriculaProfessor);
             if (professor != null) {
                 System.out.print("Novo nome completo: ");
@@ -98,19 +101,24 @@ public class ProfessorController {
 
     public void deleteProfessor() {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Exclusão de professor");
-        System.out.print("Matrícula do professor a ser excluído: ");
-        Integer matriculaProfessor = Helpers.getIntInput(input);
+        System.out.println("\n- Desativar Professor");
+        System.out.println("Atenção! Esta ação tornará o professor inativo, preservando todo o seu histórico.");
 
         try {
+            findAllProfessores();
+            System.out.print("\nDigite a matrícula do professor que deseja desativar: ");
+            Integer matriculaProfessor = Helpers.getIntInput(input);
+
             if (professorDAO.findById(matriculaProfessor) == null) {
-                System.out.println("\nErro: Professor não encontrado.");
+                System.out.println("\nErro: Professor não encontrado ou já está inativo.");
                 return;
             }
-            professorDAO.delete(matriculaProfessor);
-            System.out.println("\nProfessor e seus vínculos (leciona, reservas) foram excluídos com sucesso!");
+
+            professorDAO.deactivateProfessor(matriculaProfessor);
+
+            System.out.println("\nProfessor desativado com sucesso. Ele não aparecerá mais nas listagens, mas seu histórico foi preservado.");
         } catch (Neo4jException e) {
-            System.err.println("\nOcorreu um erro no banco de dados ao excluir o professor: " + e.getMessage());
+            System.err.println("\nOcorreu um erro no banco de dados ao desativar o professor: " + e.getMessage());
         }
     }
 

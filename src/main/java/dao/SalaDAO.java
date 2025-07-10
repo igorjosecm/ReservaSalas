@@ -46,14 +46,27 @@ public class SalaDAO extends GenericDAO<Sala, String> {
      */
     public List<Sala> findSalasByBloco(String codigoBloco) {
         try (Session session = driver.session()) {
-            return session.executeRead(tx -> {
-                String cypher = "MATCH (s:Sala)-[:LOCALIZADA_EM]->(b:Bloco {codigo_bloco: $codigoBloco}) RETURN s";
-                Result result = tx.run(cypher, Values.parameters("codigoBloco", codigoBloco));
-                List<Sala> salas = new ArrayList<>();
-                while (result.hasNext()) {
-                    salas.add(fromNode(result.next().get("s").asNode()));
-                }
-                return salas;
+            String cypher = "MATCH (s:Sala)-[:LOCALIZADA_EM]->(b:Bloco {codigo_bloco: $codigoBloco}) " +
+                    "WHERE s.ativo = true " +
+                    "RETURN s";
+            return session.executeRead(tx -> tx.run(cypher, Values.parameters("codigoBloco", codigoBloco))
+                    .list(record -> fromNode(record.get("s").asNode())));
+        }
+    }
+
+    @Override
+    public List<Sala> findAll() {
+        try (Session session = driver.session()) {
+            String cypher = "MATCH (n:Sala) WHERE n.ativo = true RETURN n";
+            return session.executeRead(tx -> tx.run(cypher).list(record -> fromNode(record.get("n").asNode())));
+        }
+    }
+
+    public void deactivateSala(String codigoSala) {
+        try (Session session = driver.session()) {
+            session.executeWriteWithoutResult(tx -> {
+                String cypher = "MATCH (s:Sala {codigo_sala: $id}) SET s.ativo = false";
+                tx.run(cypher, Values.parameters("id", codigoSala));
             });
         }
     }
@@ -77,6 +90,7 @@ public class SalaDAO extends GenericDAO<Sala, String> {
         map.put("nome_sala", entity.getNomeSala());
         map.put("andar", entity.getAndar());
         map.put("capacidade", entity.getCapacidade());
+        map.put("ativo", true);
         return map;
     }
 

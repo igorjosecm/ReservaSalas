@@ -72,10 +72,13 @@ public class SalaController {
     public void updateSala() {
         Scanner input = new Scanner(System.in);
         System.out.println("\n- Atualização de sala");
-        System.out.print("Código da sala para atualizar: ");
-        String codigoSala = input.nextLine();
 
         try {
+            findAllSalas();
+
+            System.out.print("\nCódigo da sala para atualizar: ");
+            String codigoSala = input.nextLine();
+
             Sala sala = salaDAO.findById(codigoSala);
             if (sala != null) {
                 Bloco blocoDaSala = blocoDAO.findBlocoBySala(codigoSala);
@@ -113,19 +116,22 @@ public class SalaController {
 
     public void deleteSala() {
         Scanner input = new Scanner(System.in);
-        System.out.println("\n- Exclusão de sala");
-        System.out.print("Código da sala a ser excluída: ");
-        String codigoSala = input.nextLine();
+        System.out.println("\n- Desativar Sala");
 
         try {
+            findAllSalas();
+
+            System.out.print("\nCódigo da sala a ser desativada: ");
+            String codigoSala = input.nextLine();
+
             if (salaDAO.findById(codigoSala) == null) {
                 System.out.println("\nErro: Sala não encontrada.");
                 return;
             }
-            salaDAO.delete(codigoSala);
-            System.out.println("\nSala e suas reservas (se houver) foram excluídas com sucesso!");
+            salaDAO.deactivateSala(codigoSala);
+            System.out.println("\nSala desativada com sucesso! Seu histórico de reservas foi mantido.");
         } catch (Neo4jException e) {
-            System.err.println("\nOcorreu um erro no banco de dados ao excluir a sala: " + e.getMessage());
+            System.err.println("\nOcorreu um erro no banco de dados ao desativar a sala: " + e.getMessage());
         }
     }
 
