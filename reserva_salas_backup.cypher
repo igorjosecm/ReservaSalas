@@ -4,22 +4,18 @@ CREATE CONSTRAINT constraint_bb804735 FOR (node:Reserva) REQUIRE (node.id_reserv
 CREATE CONSTRAINT constraint_da96deba FOR (node:Professor) REQUIRE (node.matricula_professor) IS UNIQUE;
 CREATE CONSTRAINT constraint_ecd40aff FOR (node:Bloco) REQUIRE (node.codigo_bloco) IS UNIQUE;
 CREATE CONSTRAINT UNIQUE_IMPORT_NAME FOR (node:`UNIQUE IMPORT LABEL`) REQUIRE (node.`UNIQUE IMPORT ID`) IS UNIQUE;
-
-CALL db.awaitIndexes(300);
-
-UNWIND [{codigo_bloco:"B", properties:{num_andares:3, nome_bloco:"Bloco B"}}, {codigo_bloco:"A", properties:{num_andares:3, nome_bloco:"Bloco A"}}] AS row
+UNWIND [{codigo_bloco:"B", properties:{ativo:true, num_andares:2, nome_bloco:"Bloco B"}}, {codigo_bloco:"A", properties:{ativo:true, num_andares:3, nome_bloco:"Bloco A"}}] AS row
 CREATE (n:Bloco{codigo_bloco: row.codigo_bloco}) SET n += row.properties;
-UNWIND [{codigo_sala:"A102", properties:{andar:1, nome_sala:"Sala A102", capacidade:36}}, {codigo_sala:"A103", properties:{andar:1, nome_sala:"Sala A103", capacidade:50}}, {codigo_sala:"A101", properties:{andar:1, nome_sala:"Sala A101", capacidade:30}}, {codigo_sala:"A201", properties:{andar:2, nome_sala:"Sala A201", capacidade:36}}] AS row
+UNWIND [{codigo_sala:"A102", properties:{andar:1, nome_sala:"Sala A102", ativo:true, capacidade:36}}, {codigo_sala:"A103", properties:{andar:1, nome_sala:"Sala A103", ativo:true, capacidade:50}}, {codigo_sala:"A101", properties:{andar:1, nome_sala:"Sala A101", ativo:true, capacidade:30}}, {codigo_sala:"A201", properties:{andar:2, nome_sala:"Sala A201", ativo:true, capacidade:36}}, {codigo_sala:"B101", properties:{andar:1, nome_sala:"Sala B101", ativo:false, capacidade:20}}, {codigo_sala:"B1", properties:{andar:1, nome_sala:"Sala B1", ativo:false, capacidade:5}}] AS row
 CREATE (n:Sala{codigo_sala: row.codigo_sala}) SET n += row.properties;
-UNWIND [{matricula_professor:20250001, properties:{data_nascimento:date('1997-12-25'), email:"rebeca.schroeder@postgres.br", nome_completo:"Rebeca Schroeder Freitas"}}] AS row
+UNWIND [{matricula_professor:20250001, properties:{ativo:true, data_nascimento:date('1997-12-25'), email:"rebeca.schroeder@postgres.br", nome_completo:"Rebeca Schroeder Freitas"}}] AS row
 CREATE (n:Professor{matricula_professor: row.matricula_professor}) SET n += row.properties;
-UNWIND [{_id:12, properties:{current_id:1, name:"reserva_id"}}] AS row
+UNWIND [{_id:12, properties:{current_id:2, name:"reserva_id"}}] AS row
 CREATE (n:`UNIQUE IMPORT LABEL`{`UNIQUE IMPORT ID`: row._id}) SET n += row.properties SET n:Sequence;
-UNWIND [{codigo_materia:"BAN2", properties:{carga_horaria:72, nome_materia:"Banco de Dados II"}}, {codigo_materia:"BAN1", properties:{carga_horaria:72, nome_materia:"Banco de Dados"}}] AS row
+UNWIND [{codigo_materia:"BAN2", properties:{carga_horaria:72, ativo:true, nome_materia:"Banco de Dados II"}}, {codigo_materia:"BAN1", properties:{carga_horaria:72, ativo:true, nome_materia:"Banco de Dados"}}] AS row
 CREATE (n:Materia{codigo_materia: row.codigo_materia}) SET n += row.properties;
 UNWIND [{id_reserva:1, properties:{fim_reserva:localdatetime('2025-07-10T22:00:00'), inicio_reserva:localdatetime('2025-07-10T19:00:00')}}, {id_reserva:0, properties:{fim_reserva:localdatetime('2025-05-08T11:00:00'), inicio_reserva:localdatetime('2025-05-08T09:00:00')}}] AS row
 CREATE (n:Reserva{id_reserva: row.id_reserva}) SET n += row.properties;
-
 UNWIND [{start: {id_reserva:1}, end: {codigo_materia:"BAN2"}, properties:{}}, {start: {id_reserva:0}, end: {codigo_materia:"BAN2"}, properties:{}}] AS row
 MATCH (start:Reserva{id_reserva: row.start.id_reserva})
 MATCH (end:Materia{codigo_materia: row.end.codigo_materia})
@@ -28,7 +24,7 @@ UNWIND [{start: {matricula_professor:20250001}, end: {codigo_materia:"BAN2"}, pr
 MATCH (start:Professor{matricula_professor: row.start.matricula_professor})
 MATCH (end:Materia{codigo_materia: row.end.codigo_materia})
 CREATE (start)-[r:LECIONA]->(end) SET r += row.properties;
-UNWIND [{start: {codigo_sala:"A102"}, end: {codigo_bloco:"A"}, properties:{}}, {start: {codigo_sala:"A103"}, end: {codigo_bloco:"A"}, properties:{}}, {start: {codigo_sala:"A101"}, end: {codigo_bloco:"A"}, properties:{}}, {start: {codigo_sala:"A201"}, end: {codigo_bloco:"A"}, properties:{}}] AS row
+UNWIND [{start: {codigo_sala:"A102"}, end: {codigo_bloco:"A"}, properties:{}}, {start: {codigo_sala:"A103"}, end: {codigo_bloco:"A"}, properties:{}}, {start: {codigo_sala:"A101"}, end: {codigo_bloco:"A"}, properties:{}}, {start: {codigo_sala:"A201"}, end: {codigo_bloco:"A"}, properties:{}}, {start: {codigo_sala:"B101"}, end: {codigo_bloco:"B"}, properties:{}}, {start: {codigo_sala:"B1"}, end: {codigo_bloco:"B"}, properties:{}}] AS row
 MATCH (start:Sala{codigo_sala: row.start.codigo_sala})
 MATCH (end:Bloco{codigo_bloco: row.end.codigo_bloco})
 CREATE (start)-[r:LOCALIZADA_EM]->(end) SET r += row.properties;
@@ -40,7 +36,5 @@ UNWIND [{start: {id_reserva:1}, end: {matricula_professor:20250001}, properties:
 MATCH (start:Reserva{id_reserva: row.start.id_reserva})
 MATCH (end:Professor{matricula_professor: row.end.matricula_professor})
 CREATE (start)-[r:REALIZADA_POR]->(end) SET r += row.properties;
-
 MATCH (n:`UNIQUE IMPORT LABEL`)  WITH n LIMIT 20000 REMOVE n:`UNIQUE IMPORT LABEL` REMOVE n.`UNIQUE IMPORT ID`;
-
 DROP CONSTRAINT UNIQUE_IMPORT_NAME;
